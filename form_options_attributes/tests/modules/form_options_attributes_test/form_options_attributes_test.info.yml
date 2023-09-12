@@ -1,0 +1,11 @@
+name: Form Options Attributes tests
+type: module
+description: 'Testing for Form Options Attributes module.'
+package : Testing
+dependencies:
+  - form_options_attributes:form_options_attributes
+
+# Information added by Drupal.org packaging script on 2022-09-25
+version: '2.0.2'
+project: 'form_options_attributes'
+datestamp: 1664118753
