@@ -1,0 +1,5 @@
+services:
+  mmss_form.getaccesstoken:
+    class: Drupal\bcbsma_webform_medicare_forms_api\Service\GetAccessTokenFromAPI
+    arguments: ['@logger.factory', '@key.repository','@http_client_factory']
+    autowire: true

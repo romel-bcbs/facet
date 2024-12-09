@@ -1,0 +1,32 @@
+<?php
+
+/**
+ * @file
+ * Contains bcbsma_medicare_search.module.
+ */
+
+/**
+ * Implements hook_theme().
+ *
+ * @inheritdoc
+ */
+function bcbsma_medicare_search_theme($existing, $type, $theme, $path) {
+  return [
+    'search_results' => [
+      'template' => 'search-results',
+      'variables' => [
+        'elementSettings' => NULL,
+        'elementMarkup' => NULL,
+        'elementContext' => NULL,
+        'elementClass' => NULL,
+        'select_options' => NULL,
+        'keyword' => NULL,
+        'results' => [],
+        'elementPager' => [],
+        'form' => NULL,
+      ],
+      'render element' => 'children',
+    ],
+  ];
+
+}

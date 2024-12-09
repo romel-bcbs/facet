@@ -1,0 +1,99 @@
+{% set range = v.range %}
+{% set ids = v.ids %}
+{% set elementSettings = v.elementSettings %}
+{% set includesPath = v.includesPath %}
+
+<div class="page" {% if v.hidden %}style="display:none"{% endif %} plan-ids="{{ids}}">
+	<div class="headers">
+    {% if v.navigate %}
+      <div class="navigate">
+        <p>Tap the arrow to see more</p>
+        <a href="" class="prev" title="Previus"></a>
+        <ul>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+        <a href="" class="next" title="Next"></a>
+      </div>
+    {% endif %}
+    {% for index in range %}
+      {% set plan = elementSettings.plans[index] %}
+      <div class="coh-style-medicare-comparison-heading plan">
+        <a href="#" class="remove-plan" plan-id="{{plan.id}}" title="Remove {{plan.name}} plan from the list for comparison" aria-label="Remove {{plan.name}} plan from the list for comparison">
+          Remove {{plan.name}}
+        </a>
+        <a href="{{plan.detailsURL}}" class="plan-name" title="{{plan.name|raw}} details page">{{plan.name|raw}}</a>
+        {{(currentYear == plan.year and month == 12) ? '' : plan.enrollButton|raw }}
+      </div>
+    {% endfor %}
+    {% if range|length == 1 %}
+      <div class="coh-style-medicare-comparison-heading empty">
+        <p>Compare up to 3 plans</p>
+        <a href="{{elementSettings.listingurl}}" class="coh-link coh-style-bcbsma-secondary-button" title="Add plan" aria-lable="Add plan">
+          Add plan
+        </a>
+      </div>
+    {% endif %}
+	</div>
+
+  <div class="category highlights">
+    {% for highlight in elementSettings.allHighlights %}
+      <div class="benefit">
+        <div class="label">
+          {% set var = {'tooltip': elementSettings.highlightsToolTip[highlight]} %}
+          {% if var.tooltip %}
+            <a class="mobile-tooltip" tooltip="{{var.tooltip}}" title="{{var.tooltip}}">{{highlight|raw}}</a>
+          {% else %}
+            {{highlight|raw}}
+          {% endif %}
+        </div>
+        {% for index in range %}
+          {% set plan = elementSettings.plans[index] %}
+          {% if plan.highlights[highlight] %}
+            <div class="value">{{plan.highlights[highlight]|raw}}</div>
+          {% else %}
+            <div class="value">Not Included</div>
+          {% endif %}
+        {% endfor %}
+        {% if range|length == 1 %}
+          <div class="value">Not Included</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+
+  {# TODO: Add dental block #}
+
+	{% for category in elementSettings.categories %}
+		<div class="category">
+			{% include includesPath ~ 'comparison/category-and-additional-block.html.twig' %}
+      <div class="table">
+			  {% for benefit in category.benefits %}
+          <div class="benefit {% if loop.index > 3 %} extra{% endif %} {% if loop.index == 1 %} first{% endif %}" {% if benefit.tags %} tags="{{benefit.tags}}" {% endif %}>
+					  <div class="label">
+						  {{benefit.label|raw}}
+						  {% set var = {'tooltip': benefit.tooltip} %}
+						  {% include includesPath ~ 'tooltip.html.twig' with var %}
+					  </div>
+            {% for index in range %}
+              {% set value = benefit.values[index] %}
+              <div class="value">
+                {% if value[0].text %}
+                  {{value[0].text|raw}}
+                {% else %}
+                Not Included
+                {% endif %}
+              </div>
+            {% endfor %}
+            {% if range|length == 1 %}
+              <div class="value">Not Included</div>
+            {% endif %}
+				  </div>
+			  {% endfor %}
+      </div>
+        {% set var = {'viewMoreLink': category.benefits|length > 3} %}
+        {% include includesPath ~ 'view-more.html.twig' with var %}
+    </div>
+	{% endfor %}
+</div>

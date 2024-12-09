@@ -1,0 +1,24 @@
+{#
+/**
+ * @file
+ * Default theme implementation of a webform hierarchy element.
+ *
+ * Available variables:
+ * - content: The webform hierarchy to be output.
+
+ * @see template_preprocess_webform_hierarchy()
+ *
+ * @ingroup themeable
+ */
+#}
+{% if flexbox %}
+  <div class="webform-flexbox">
+    {% for content_element in content %}
+      {% if content_element %}
+        <div class="webform-flex webform-flex--1"><div class="webform-flex--container">{{ content_element }}</div></div>
+      {% endif %}
+    {% endfor %}
+  </div>
+{% else %}
+  {{ content }}
+{% endif %}

@@ -1,0 +1,18 @@
+services:
+  bcbsma_plans.service:
+    class: Drupal\bcbsma_plans\Service\MedicarePlanData
+    arguments: ['@logger.factory', '@entity_type.manager','@entity_field.manager', '@cache.bcbsma_plans', '@database']
+
+  # custom cache bin to house the API Response
+  cache.bcbsma_plans:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    tags:
+      - { name: cache.bin }
+    factory: cache_factory:get
+    arguments: [bcbsma_pans_bin]
+
+  medicare_redirect.redirect_subscriber:
+    class: \Drupal\bcbsma_plans\EventSubscriber\MedicareRedirectSubscriber
+    arguments: ['@current_user', '@request_stack', '@current_route_match', '@config.factory', '@logger.factory', '@path.matcher']
+    tags:
+      - { name: event_subscriber }

@@ -1,0 +1,81 @@
+{% set includesPath = '@medicare_options/templates/includes/' %}
+<div plan-ids={{elementSettings.PlanID}} type="benefits" format="table">
+  {# <div class="category-display">
+    {{elementSettings.display|raw}}
+  </div> #}
+  {% if elementSettings.additionalBlock %}
+    {{elementSettings.additionalBlock}}
+  {% endif %}
+  {% if elementSettings.displayas == 'table' %}
+  <table class="coh-style-medicare-table table details">
+    <thead>
+      <tr>
+        <th colspan="2">
+          {{ elementSettings.header|raw }}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for benefit in elementSettings.benefits %}
+      <tr
+        {% if benefit.label.tags %} tags="{{benefit.label.tags}}"{% endif %}>
+        <th>
+          {% set var = {'tooltip': benefit.label.tooltip} %}
+          {% if var.tooltip %}
+            <div class="only-desktop">
+              {{benefit.label.display|raw}}
+              {% include includesPath ~ 'tooltip.html.twig' with var %}
+            </div>
+            <div class="only-mobile">
+              <a class="mobile-tooltip" tooltip="{{var.tooltip}}" title="{{var.tooltip}}">{{benefit.label.display|raw}}</a>
+            </div>
+          {% else %}
+            {{benefit.label.display|raw}}
+          {% endif %}
+        </th>
+        <td>
+          {{benefit.text|raw}}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {# {% set var = {'viewMoreLink':(elementSettings.benefits|length > 3) and (elementSettings.highlights != 1)} %}
+  {% include includesPath ~ 'view-more.html.twig' with var %} #}
+
+  {% else %}
+  <div class="coh-style-bcbsma-accordion custom">
+    <div class="coh-accordion-tabs" data-type="regular">
+      <div class="coh-accordion-tabs-inner coh-accordion-tabs-horizontal-center coh-accordion-tabs-display-accordion-xs accordion coh-accordion-tabs-display-accordion" data-coh-accordion="{&quot;title&quot;:&quot;Accordion&quot;,&quot;styles&quot;:{&quot;xl&quot;:{&quot;accordionTabWidth&quot;:-2,&quot;accordionTabBleed&quot;:&quot;retain_gutters&quot;},&quot;sm&quot;:[],&quot;xs&quot;:{&quot;collapsible&quot;:true,&quot;accordionOrTab&quot;:&quot;accordion&quot;,&quot;animation&quot;:&quot;slide&quot;,&quot;duration&quot;:400,&quot;offsetPositionAgainst&quot;:&quot;px&quot;,&quot;scrollToAccordionOffset&quot;:0,&quot;startCollapsed&quot;:&quot;true&quot;}},&quot;scrollToAccordion&quot;:false,&quot;setHash&quot;:false,&quot;horizontalVertical&quot;:&quot;horizontal_top&quot;,&quot;HorizontalPosition&quot;:&quot;center_aligned&quot;,&quot;VerticalPosition&quot;:&quot;left&quot;}">
+        <ul class="coh-accordion-tabs-nav">
+          {% for benefit in elementSettings.benefits %}
+          <li>
+            <a href="#acc-{{loop.index}}" data-once="loadEvent" data-disabled="false" aria-expanded="false">
+              {{benefit.label.display|raw}}
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+        <div class="coh-accordion-tabs-content-wrapper">
+          {% for benefit in elementSettings.benefits %}
+          <div class="coh-accordion-title" data-coh-tab-settings="[]" data-once="tab-init">
+            <a href="#acc-{{loop.index}}" data-once="loadEvent">
+              {{benefit.label.display|raw}}
+            </a>
+          </div>
+          <div id="acc-{{loop.index}}" class="coh-accordion-tabs-content ssa-component coh-component tab-content" style="display: none;">
+            <div class="coh-container">
+              <div class="coh-container ssa-component coh-component coh-style-bcbsma-module-settings coh-style-bcbsma-simple-content" data-space-bellow="no">
+                <div class="coh-wysiwyg simple-content-content">
+                  {{benefit.text|raw}}
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>

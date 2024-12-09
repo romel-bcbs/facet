@@ -1,0 +1,9 @@
+name: Custom Token - BCBS Medicare
+type: module
+description: Selected Keys are exposed as tokens.
+core_version_requirement: ^10
+package: Medicare
+
+dependencies:
+  - drupal:key
+  - drupal:bcbsma_webform_medicare_forms_api

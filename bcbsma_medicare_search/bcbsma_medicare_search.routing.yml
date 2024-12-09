@@ -1,0 +1,9 @@
+search.site_config_form:
+  path: '/admin/config/medicare-search-config'
+  defaults:
+    _form: '\Drupal\bcbsma_medicare_search\Form\SearchConfigForm'
+    _title: 'Medicare Site Search Configuration'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE

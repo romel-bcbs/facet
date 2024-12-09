@@ -1,0 +1,38 @@
+medicare-form-reset-browser-back:
+  js:
+    js/medicare-form-reset-browser-back.js: {}
+  dependencies:
+    - core/jquery
+medicare-admin-form-update:
+  js:
+    js/medicare-admin-form-update.js: {}
+  dependencies:
+    - core/jquery
+medicare-local-datetime-popup:
+  js:
+    js/localdatetime-popup.js: {}
+  dependencies:
+    - core/jquery
+error-hide:
+  css:
+    theme:
+      styles/hide_error_message.css: {}
+medicare-file-upload:
+  js:
+    file_upload_widget/file-list-upload.js: {}
+    file_upload_widget/legalrep-form-upload.js: {}
+    file_upload_widget/legalrep-hide-show-file-upload.js: {}
+  css:
+    theme:
+      styles/hide_field_to_file_upload.css: {}
+  dependencies:
+    - core/jquery
+legalrep-localstorage-remove:
+  js:
+    file_upload_widget/legalrep-form-delete-local-storage.js: {}
+  dependencies:
+    - core/jquery
+legalrep-label-update:
+  css:
+    theme:
+      styles/legalrep_label_update.css: {}

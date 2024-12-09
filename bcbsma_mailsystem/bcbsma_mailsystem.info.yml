@@ -1,0 +1,5 @@
+name: 'Graph Mail'
+type: module
+description: 'This module provides Mail sending functionality through Microsoft Graph API'
+core_version_requirement: ">=8.9 <11"
+configure: graph_mail_system.settings_form

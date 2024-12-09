@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains bcbsma_chat.module.
+ */
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * @inheritdoc
+ */
+function bcbsma_chat_page_attachments(array &$attachments): void {
+  $config = \Drupal::config('bcbsma_chat.settings');
+  $ameliaConfig = \Drupal::config('bcbsma_chat.settings');
+  $bcbsma_chat_page_url = \Drupal::config('bcbsma_chat.settings')->get('bcbsma_chat_page_url');
+  $urls = array_map('trim', explode(PHP_EOL, $bcbsma_chat_page_url));
+  $attachments['#attached']['library'][] = 'bcbsma_chat/chat_api';
+  $attachments['#cache']['tags'][] = 'config:bcbsma_chat.settings';
+  $attachments['#attached']['drupalSettings']['chat_api']['chatApi']['chatpageurl'][] = $urls;
+  $attachments['#attached']['drupalSettings']['chat_api']['chatApi']['chatBaseUrl'] = $config->get('bcbsma_chat_base_url');
+  $attachments['#attached']['drupalSettings']['chat_api']['chatApi']['chatTemplateUrl'] = $config->get('bcbsma_chat_template_url');
+  $attachments['#attached']['drupalSettings']['chat_api']['chatApi']['ameliaChatBaseUrl'] = $ameliaConfig->get('iframe_domain');
+}

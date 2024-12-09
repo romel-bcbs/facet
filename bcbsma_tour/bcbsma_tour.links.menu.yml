@@ -1,0 +1,12 @@
+onboarding.settings:
+  title: 'Onboarding Users'
+  route_name: onboarding.settings
+  parent: system.admin_config
+  description: 'Configure Forms'
+  weight: -10
+onboarding.content:
+  title: 'Onboarding Users - Contents - Advantage Plan'
+  parent: onboarding.settings
+  description: 'Content on the Onboarding popup'
+  weight: 2
+  route_name: onboarding.content

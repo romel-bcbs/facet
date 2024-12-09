@@ -1,0 +1,18 @@
+{% if elementSettings.player_id %}
+  {% set player_id = elementSettings.player_id %}
+{% else %}
+  {% set player_id = 'ERsw61xzk7' %}
+{% endif %}
+<div class="{{ elementClass }}" data-element="brightcove-element">
+  <div class="brightcove-video-container">
+    <video-js class="vjs-fluid" controls=""
+      id="brightCoveVideoPlayer"
+      data-account= "5981523323001"
+      data-application-id=""
+      data-embed="default"
+      data-player="{{ player_id }}"
+      data-playlist-id=""
+      data-video-id="{{ elementSettings.video_id }}">
+    </video-js>
+  </div>
+</div>

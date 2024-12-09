@@ -1,0 +1,117 @@
+<?php
+
+/**
+ * @file
+ * This is the module to support Medicare Site functionality.
+ *
+ * @codingStandardsIgnoreFile
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\NodeInterface;
+
+/**
+ * Implements hook_theme().
+ */
+function medicare_options_theme(array $existing, string $type, string $theme, $path): array {
+  return [
+    'brightcove_element' => [
+      'template' => 'brightcove-element',
+      'variables' => [
+        'elementSettings' => NULL,
+        'elementMarkup' => NULL,
+        'elementContext' => NULL,
+        'elementClass' => NULL,
+      ],
+      'render element' => 'children',
+    ],
+    'benefits' => [
+      'template' => 'benefits',
+      'variables' => [
+        'elementSettings' => NULL,
+        'elementMarkup' => NULL,
+        'elementContext' => NULL,
+        'elementClass' => NULL,
+        'select_options' => NULL,
+      ],
+      'render element' => 'children',
+    ],
+    'comparison' => [
+      'template' => 'comparison',
+      'variables' => [
+        'elementSettings' => NULL,
+        'elementMarkup' => NULL,
+        'elementContext' => NULL,
+        'elementClass' => NULL,
+        'select_options' => NULL,
+      ],
+      'render element' => 'children',
+    ],
+    'premium' => [
+      'template' => 'premium',
+      'variables' => [
+        'elementSettings' => NULL,
+        'elementMarkup' => NULL,
+        'elementContext' => NULL,
+        'elementClass' => NULL,
+        'select_options' => NULL,
+      ],
+      'render element' => 'children',
+    ],
+  ];
+}
+
+/**
+ * Implements hook_preprocess_HOOK()
+ */
+
+function medicare_options_preprocess_block(&$vars) {
+  if (in_array($vars['elements']['#id'], ['customsort'])) {
+    $vars['#cache']['max-age'] = 0;
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * @inheritdoc
+ */
+function medicare_options_page_attachments(array &$attachments): void {
+  $config = \Drupal::config('medicare_options.site_config_form');
+  if (!is_null($config)) {
+    $filterUrls = array_map('trim', explode(PHP_EOL, $config->get('filter_retain_urls') ?? ''));
+    $localDataClearDates =  array_map('trim', explode(PHP_EOL, $config->get('local_data_clear') ?? ''));
+    $attachments['#attached']['drupalSettings']['maps']['serviceUrl'] = $config->get('maps_service_url');
+    $attachments['#attached']['drupalSettings']['drug']['serviceUrl'] = $config->get('drug_search_service_url');
+    $attachments['#attached']['drupalSettings']['doctor']['serviceUrl'] = $config->get('doctor_search_service_url');
+    $attachments['#attached']['drupalSettings']['doctor']['flag'] = $config->get('doctor_search_service');
+    $attachments['#attached']['drupalSettings']['drug']['flag'] = $config->get('drug_search_service');
+    $attachments['#attached']['drupalSettings']['filterUrls'] = $filterUrls;
+    $attachments['#attached']['drupalSettings']['localDataClearDates'] = $localDataClearDates;
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ *
+ * Adding form action to zipcode.
+ * webform for specific conditions.
+ */
+function medicare_options_form_alter(&$form, FormStateInterface $form_state, $form_id): void {
+  if (strpos($form_id, 'webform_submission_zip_code') !== FALSE){
+    $pathName = \Drupal::request()->getPathInfo();
+    if ($pathName == "/"){
+      $form['#action'] = "/shop-plans";
+    } elseif ($pathName == "/enter-zip-code") {
+      $url_paramters = \Drupal::request()->query->all();
+      if (!empty($url_paramters) && isset($url_paramters['redirectUrl'])) {
+        $form['#action'] = $url_paramters['redirectUrl'];
+      }
+      else {
+        $form['#action'] = "/";
+      }
+    } elseif(($pathName != "/") && ($pathName != "/enter-zip-code")){
+      $form['#action'] = $pathName;
+    }
+  }
+}

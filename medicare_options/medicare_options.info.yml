@@ -1,0 +1,8 @@
+name: Medicare Options
+description: Custom functionality for Medicare.
+type: module
+core_version_requirement: ^9 || ^10
+package: Medicare
+configure: medicare_options.site_config_form
+libraries:
+  - medicare_options/admin

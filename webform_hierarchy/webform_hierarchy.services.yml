@@ -1,0 +1,4 @@
+services:
+  plugin.manager.webform_hierarchy:
+    class: Drupal\webform_hierarchy\Plugin\WebformHierarchyManager
+    arguments: ['@container.namespaces', '@cache.discovery', '@module_handler']

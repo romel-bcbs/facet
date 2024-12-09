@@ -1,0 +1,8 @@
+name: Custom Tour - BCBS Medicare
+type: module
+description: Enable Custom Tour for Medicare.
+core_version_requirement: ^10
+package: Medicare
+
+dependencies:
+  - drupal:tour

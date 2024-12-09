@@ -1,0 +1,10 @@
+.messages.messages--error {
+  display: none;
+}
+form label:focus,
+form .focusable-element:focus,
+form .webform-actions:focus {
+  outline-width: 3px;
+  outline-color: #fc5c3b;
+  outline-style: solid;
+}

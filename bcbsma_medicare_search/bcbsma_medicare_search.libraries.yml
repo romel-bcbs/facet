@@ -1,0 +1,6 @@
+drupal.facets.radiobox-widget:
+  version: VERSION
+  js:
+    js/radio-widget.js: {}
+  dependencies:
+    - facets/widget

@@ -1,0 +1,17 @@
+#edit-power-of-attorney-file-upload-error,
+#edit-health-care-proxy-file-upload-error,
+#edit-executor-of-estate-file-upload-error,
+#edit-court-appointed-guardian-file-upload-error,
+#edit-other-document-file-upload-error {
+  display: none;
+}
+form .form-item.form-item-power-of-attorney-file-upload-error,
+form .form-item.form-item-health-care-proxy-file-upload-error,
+form .form-item.form-item-executor-of-estate-file-upload-error,
+form .form-item.form-item-court-appointed-guardian-file-upload-error,
+form .form-item.form-item-other-document-file-upload-error {
+  margin-top: 0;
+}
+.select2-container--default .select2-results .select2-results__options {
+  max-height: 300px;
+}

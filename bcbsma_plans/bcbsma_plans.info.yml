@@ -1,0 +1,5 @@
+name: 'Medicare Plans'
+type: module
+description: 'This module is used to handle ALl plans related stuff'
+core_version_requirement: ">=8.9 <11"
+package: Medicare

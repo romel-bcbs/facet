@@ -1,0 +1,8 @@
+medicare-seminar:
+  js:
+    js/seminar_update.js: {}
+  dependencies:
+    - core/jquery
+  css:
+    theme:
+      css/seminar_update.css: {}

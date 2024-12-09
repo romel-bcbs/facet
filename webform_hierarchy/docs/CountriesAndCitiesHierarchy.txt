@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * @file
+ * Template of webform hierarchy plugin.
+ *
+ * It must reside in src\Plugin\WebformHierarchy directory.
+ */
+
+namespace Drupal\example\Plugin\WebformHierarchy;
+
+use Drupal\webform_hierarchy\Plugin\WebformHierarchyBase;
+
+/**
+ * Country and city hierarchy class.
+ *
+ * @WebformHierarchy(
+ *   id = "countries_and_cities",
+ *   label = @Translation("Countries and cities"),
+ *   description = @Translation("List of countries and their cities."),
+ *   widgets = {
+ *     "country" = @Translation("Country"),
+ *     "city" = @Translation("City"),
+ *   },
+ * )
+ */
+class CountriesAndCitiesHierarchy extends WebformHierarchyBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function items($widget_name, $parent_value, $langcode) {
+    if ($widget_name === 'country') {
+      return [];
+    }
+
+    return [];
+  }
+
+}

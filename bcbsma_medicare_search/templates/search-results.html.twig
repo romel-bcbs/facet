@@ -1,0 +1,27 @@
+<div class="views-element-container">
+	<h1 class="coh-heading coh-ce-c2344791">Search results</h1>
+  <div class="coh-style-bcbsma-search-form search-results">{{form}}</div>
+	<h3 class="coh-heading coh-ce-b5b7afde">Showing results for "{{keyword}}"</h3>
+  {% if results is not empty %}
+    {% for result in results %}
+      <div class="coh-container coh-ce-13be9045">
+        <div class="views-field views-field-title">
+          <span class="field-content">
+            <a href="{{ result.url }}" hreflang="en">{{ result.title|raw }}</a>
+          </span>
+        </div>
+        <div class="views-field views-field-search-api-excerpt">
+          <span class="field-content">{{ result.highlight|raw }}</span>
+        </div>
+      </div>
+
+    {% endfor %}
+    {{ elementPager }}
+  {% else %}
+    <div class="coh-style-bcbsma-section-settings">
+      <h3 style="text-align: center">Oops we couldn't find anything matching "{{keyword}}" on our site</h3>
+    </div>
+  {% endif %}
+</div>
+
+

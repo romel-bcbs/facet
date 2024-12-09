@@ -1,0 +1,5 @@
+bcsma_chat.configform:
+  title: BCBSMA CHAT
+  description: 'BCBSMA CHAT configuration'
+  parent: system.admin_config_development
+  route_name: bcsma_chat.settings

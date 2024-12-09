@@ -1,0 +1,169 @@
+<?php
+
+/**
+ * @file
+ * Contains bcbsma_seminar.module.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\node\Entity\Node;
+use Drupal\views\ViewExecutable;
+use Drupal\views\Views;
+use Drupal\webform\Entity\WebformSubmission;
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function bcbsma_seminar_views_pre_render(ViewExecutable $view): void {
+  if ($view->id() == 'seminar_list_dashboard' || $view->id() == 'seminar_admin_dashboard') {
+    foreach ($view->result as $value) {
+      $peopleCount = 0;
+      if ($value->_entity instanceof Node) {
+        $locationId = $value->_entity->id();
+        $capacity = $value->_entity->field_capacity->value;
+        $view = Views::getView('seminar_registrations_count');
+        $view->setDisplay('submission_count');
+        $args = [$locationId];
+        $view->setArguments($args);
+        $view->execute();
+        foreach ($view->result as $row) {
+          if ($row->_entity instanceof WebformSubmission) {
+            $peopleCount += $row->_entity->getElementData('including_yourself_how_many_people_are_attending');
+          }
+        }
+        if (!$peopleCount) {
+          $value->_entity->field_total_registration->value = 'none';
+        }
+        else {
+          $value->_entity->field_total_registration->value = $peopleCount;
+        }
+        $capDifference = $capacity - $peopleCount;
+        $value->_entity->field_capacity_difference->value = max($capDifference, 0);
+      }
+    }
+  }
+  // User listing page Capacity and Capacity flag update.
+  if ($view->id() == 'seminar_listing' && ($view->current_display == 'seminar_list_view' || $view->current_display == 'seminar_calendar_view')) {
+    foreach ($view->result as $value) {
+      if (isset($value->_object)) {
+        if ($value->_object->getEntity() instanceof Node) {
+          $getEntity = $value->_object->getEntity();
+          $peopleCount = 0;
+          $capDifference = 0;
+          $locationId = "";
+          if (isset($getEntity->get('nid')->value)) {
+            $locationId = $getEntity->get('nid')->value;
+          }
+          $capacity = $getEntity->get('field_capacity')->value;
+          $logger = \Drupal::logger('bcbsma_webform_medicare_forms_api_views_pre_render  - seminar_listing' . $locationId);
+          $sidResult = \Drupal::database()->query("SELECT sid FROM  webform_submission_data WHERE  name = 'sid' AND value = $locationId");
+          if ($sidResult) {
+            while ($sidResultrow = $sidResult->fetchAssoc()) {
+              $sid = $sidResultrow['sid'];
+              $logger->notice('bcbsma_webform_medicare_forms_api_views_pre_render - sid' . $sid);
+              $peopleResult = \Drupal::database()->query("SELECT value FROM  webform_submission_data WHERE  name = 'including_yourself_how_many_people_are_attending' AND sid = $sid");
+              if ($peopleResult) {
+                while ($peopleResultrow = $peopleResult->fetchAssoc()) {
+                  $peopleCount += $peopleResultrow['value'];
+                }
+              }
+            }
+          }
+          if (!$peopleCount) {
+            $getEntity->field_total_registration->value = 'none';
+          }
+
+          else {
+            $getEntity->field_total_registration->value = $peopleCount;
+          }
+          $seminar_almost_full_percentage = trim(\Drupal::config('bcbsma_webform_medicare_forms_api.general_config')->get('seminar_almost_full_percentage'));
+          if ($peopleCount) {
+            $capDifference = round(($peopleCount / $capacity) * 100);
+          }
+          $getEntity->field_capacity_flag->value = 'seminar_available';
+          $seminar_full_cancelled = $getEntity->get('field_seminar_full_cancelled')->value;
+          if ($capDifference >= $seminar_almost_full_percentage && $capDifference < 100) {
+            $getEntity->field_capacity_flag->value = 'seminar_almost_full';
+          }
+
+          elseif ($capDifference >= 100) {
+            $getEntity->field_capacity_flag->value = 'seminar_full';
+          }
+          if ($seminar_full_cancelled) {
+            $getEntity->field_capacity_flag->value = 'seminar_full';
+          }
+          $getEntity->field_capacity_difference->value = $capDifference;
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Unset the Info and Location field if Seminar type in Online.
+ *
+ * @inheritdoc
+ */
+function bcbsma_seminar_node_presave($node) {
+  if ($node->getEntityTypeId() == 'node' && $node->getType() == 'seminar') {
+    $field_inperson_online_tid = trim(\Drupal::config('bcbsma_webform_medicare_forms_api.general_config')->get('inperson_seminar_field_update'));
+    if ($node->get('field_inperson_online')->target_id == $field_inperson_online_tid) {
+      $node->set("field_location", '');
+    }
+  }
+}
+
+/**
+ * Implements hook_views_data().
+ *
+ * @inheritdoc
+ */
+function bcbsma_seminar_views_data() {
+  $data = [];
+  $data['search_api_index_seminar_details']['date_range_list'] = [
+    'title' => t('Date Range List'),
+    'filter' => [
+      'title' => t('Date Range List Filter'),
+      'group' => t('Content datasource'),
+      'help' => t('Search API - Date Range List Filter.'),
+      'field' => 'field_seminar_date',
+      'id' => 'date_range_list_filter',
+    ],
+  ];
+  $data['search_api_index_seminar_details']['date_range_picker'] = [
+    'title' => t('Date Range Picker'),
+    'filter' => [
+      'title' => t('Date Range Picker Filter'),
+      'group' => t('Content datasource'),
+      'help' => t('Search API - Date Range Picker Filter.'),
+      'field' => 'field_seminar_date',
+      'id' => 'date_range_picker_filter',
+    ],
+  ];
+  return $data;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Get Plan Highlights.
+ *
+ * @inheritdoc
+ */
+function bcbsma_seminar_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
+  $formid_listing = 'seminar-listing-seminar-list';
+  if ($form_id == 'views_exposed_form' && strpos($form['#id'], $formid_listing)) {
+    $form['#attached']['library'][] = 'bcbsma_seminar/medicare-seminar';
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * @inheritdoc
+ */
+function bcbsma_seminar_page_attachments(array &$attachments): void {
+  $attachments['#attached']['drupalSettings']['drugDoctor']['serviceUrl'] = '';
+}

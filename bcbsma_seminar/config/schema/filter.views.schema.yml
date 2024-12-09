@@ -1,0 +1,14 @@
+views.filter.date_range_list_filter:
+  type: mapping
+  label: 'Date Range - List'
+  mapping:
+    state:
+      type: string
+      label: 'Date Range - List'
+views.filter.date_range_picker_filter:
+  type: mapping
+  label: 'Date Range - Picker'
+  mapping:
+    state:
+      type: string
+      label: 'Date Range - Picker'

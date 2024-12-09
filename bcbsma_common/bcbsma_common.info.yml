@@ -1,0 +1,4 @@
+name: 'BCBSMA Common'
+type: module
+description: 'This module provides all common functionality’s updates'
+core_version_requirement: ">=8.9 <11"

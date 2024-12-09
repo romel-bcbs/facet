@@ -1,0 +1,10 @@
+.coh-layout-canvas-settings .close {
+  opacity: 1;
+  color: white;
+}
+.coh-layout-canvas-settings .close:hover {
+  color: white;
+}
+.coh-layout-canvas-settings .modal-footer {
+  display: block;
+}

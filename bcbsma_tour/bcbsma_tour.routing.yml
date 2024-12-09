@@ -1,0 +1,16 @@
+onboarding.settings:
+  path: '/admin/config/onboarding'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Onboarding Users'
+  requirements:
+    _permission: 'administer site configuration'
+onboarding.content:
+  path: '/admin/config/onboarding/onboarding_users'
+  defaults:
+    _form: '\Drupal\bcbsma_tour\Controller\OnboardingUsers'
+    _title: 'Onboarding Users - Contents'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE

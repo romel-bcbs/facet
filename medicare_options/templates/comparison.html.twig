@@ -1,0 +1,205 @@
+
+{% set currentYear = "now"|date("Y") %}
+{% set month = elementSettings.month %}
+
+{% if elementSettings.hiddenpageinfo %}
+  {{elementSettings.hiddenpageinfo}}
+{% endif %}
+{% set includesPath = '@medicare_options/templates/includes/' %}
+<div class="comparison-tables-container">
+  <div id="confirm-removal" style="display: none">
+    If you remove last plan from comparison, you will automatically
+    be redirected to the previous page to review all plans
+  </div>
+  {# Start Desktop template #}
+  <div class="comparison-table desktop coh-style-bcbsma-section-settings coh-style-medicare-comparison-table"
+        plan-ids="{{elementSettings.ids}}" format="table">
+    <div class="sticky-container coh-style-bcbsma-background-section coh-style-bcbsma-section-settings full" data-remove-space-bellow="1">
+      <div class="content-container coh-style-bcbsma-container">
+        <table class="comparison headers" number-plans="{{elementSettings.number}}">
+          <thead>
+            <tr>
+              <th class="empty">
+                <a href="{{elementSettings.listingurl}}" class="back-to-listing" title="Back to {{elementSettings.type}}">
+                  Back to
+                  {{elementSettings.type}}
+                </a>
+              </th>
+              {% for plan in elementSettings.plans %}
+                <th>
+                  <div>
+                    <a href="#" class="remove-plan" plan-id="{{plan.id}}" title="Remove {{plan.name}} plan from the list for comparison" aria-label="Remove {{plan.name}} plan from the list for comparison">
+                      Remove  {{plan.name}}
+                    </a>
+                    <a href="{{plan.detailsURL}}" class="plan-name">
+                      {{plan.name|raw}}
+                    </a>
+                    {{(currentYear == plan.year and month == 12) ? '' : plan.enrollButton|raw }}
+                  </div>
+                </th>
+              {% endfor %}
+              {% if elementSettings.number != 3 %}
+                <th class="empty add-plan">
+                  <div>
+                    <p>Compare up to 3 plans</p>
+                    <a href="{{elementSettings.listingurl}}" class="coh-link coh-style-bcbsma-secondary-button" title="Add plan" aria-label="Add plan">
+                      Add plan
+                    </a>
+                  </div>
+                </th>
+              {% endif %}
+            </tr>
+          </thead>
+        </table>
+      </div>
+    </div>
+
+    <table class="comparison highlights" number-plans="{{elementSettings.number}}">
+
+      <thead style="position: absolute; left: -10000px;">
+        <tr>
+          <th></th>
+          {% for plan in elementSettings.plans %}
+            <th>
+              {{plan.name|raw}}
+            </th>
+          {% endfor %}
+          {% if elementSettings.number != 3 %}
+            <th></th>
+          {% endif %}
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for highlight in elementSettings.allHighlights %}
+        <tr>
+          <th>
+            {{highlight|raw}}
+            {% set var = {'tooltip': elementSettings.highlightsToolTip[highlight]} %}
+            {% include includesPath ~ 'tooltip.html.twig' with var %}
+          </th>
+          {% for plan in elementSettings.plans %}
+          {% if plan.highlights[highlight] %}
+          <td>{{plan.highlights[highlight]|raw}}</td>
+          {% else %}
+          <td>Not Included</td>
+          {% endif %}
+          {% endfor %}
+          {% if elementSettings.number != 3 %}
+          <td class="empty"></td>
+          {% endif %}
+        </tr>
+       {% endfor %}
+      </tbody>
+    </table>
+
+    {% if elementSettings.denataladditionalblock %}
+      {{elementSettings.denataladditionalblock}}
+    {% endif %}
+
+    {% for category in elementSettings.categories %}
+    <div class="category">
+      {% include includesPath ~ 'comparison/category-and-additional-block.html.twig' %}
+      <table class="comparison table" number-plans="{{elementSettings.number}}">
+        <thead style="position: absolute; left: -10000px;">
+          <tr>
+            <th></th>
+            {% for plan in elementSettings.plans %}
+            <th>{{plan.name|raw}}</th>
+            {% endfor %}
+            {% if elementSettings.number != 3 %}
+            <th></th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+      {% for benefit in category.benefits %}
+          <tr class="benefit{% if loop.index > 3 %} extra{% endif %}"{% if benefit.tags %} tags="{{benefit.tags}}"{% endif %}>
+            <th>
+              {{benefit.label|raw}}
+              {% set var = {'tooltip': benefit.tooltip} %}
+              {% include includesPath ~ 'tooltip.html.twig' with var %}
+            </th>
+            {% for value in benefit.values %}
+            <td aria-label="">
+            {% if value[0].text %}
+              {{value[0].text|raw}}
+            {% else %}
+            Not Included
+            {% endif %}
+            </td>
+            {% endfor %}
+            {% if elementSettings.number != 3 %}
+            <td class="empty"></td>
+            {% endif %}
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% set var = {'viewMoreLink': category.benefits|length > 3} %}
+      {% include includesPath ~ 'view-more.html.twig' with var %}
+    </div>
+    {% endfor %}
+  </div>
+  {# End Desktop template #}
+
+  {# Start Mobile template #}
+  <div class="comparison-table mobile coh-style-bcbsma-section-settings coh-style-medicare-comparison-table">
+    {% if elementSettings.number == 1 %}
+      {% set v = {
+        'range':[0],
+        'ids':elementSettings.ids|split(',')[0],
+        'elementSettings':elementSettings,
+        'navigate': false,
+        'includesPath': includesPath,
+        'hidden': false,
+        'month': month,
+        'currentYear': currentYear
+      } %}
+      {% include includesPath ~ 'comparison/mobile/page.html.twig' with v %}
+    {% endif %}
+
+    {% if elementSettings.number > 1 %}
+      {% set v = {
+        'range':[0,1],
+        'ids':elementSettings.ids|split(',')[0] ~ ',' ~ elementSettings.ids|split(',')[1],
+        'elementSettings':elementSettings,
+        'navigate': true,
+        'includesPath': includesPath,
+        'hidden': false,
+        'month': month,
+        'currentYear': currentYear
+      } %}
+      {% include includesPath ~ 'comparison/mobile/page.html.twig' with v %}
+
+      {% if elementSettings.number < 3 %}
+        {% set v = {
+            'range':[1],
+            'ids':elementSettings.ids|split(',')[1],
+            'elementSettings':elementSettings,
+            'navigate': true,
+            'includesPath': includesPath,
+            'hidden': true,
+            'month': month,
+            'currentYear': currentYear
+          } %}
+        {% include includesPath ~ 'comparison/mobile/page.html.twig' with v %}
+      {% endif %}
+    {% endif %}
+
+    {% if elementSettings.number > 2 %}
+      {% set range = [1,2] %}
+      {% set v = {
+        'range':[1,2],
+        'ids':elementSettings.ids|split(',')[1] ~ ',' ~ elementSettings.ids|split(',')[2],
+        'elementSettings':elementSettings,
+        'navigate': true,
+        'includesPath': includesPath,
+        'hidden': true,
+        'month': month,
+        'currentYear': currentYear
+      } %}
+      {% include includesPath ~ 'comparison/mobile/page.html.twig' with v %}
+    {% endif %}
+  </div>
+</div>

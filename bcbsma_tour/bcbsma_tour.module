@@ -1,0 +1,27 @@
+<?php
+
+/**
+ * @file
+ * Contains bcbsma_tour.module.
+ */
+
+/**
+ * Implements hook_page_attachments().
+ *
+ * @inheritdoc
+ */
+function bcbsma_tour_page_attachments(array &$attachments): void {
+  $current_path = \Drupal::service('path.current')->getPath();
+  $bcbsma_tour_library_path_mapping = \Drupal::config('bcbsma_tour.general_config');
+  // Get field mapping data from Library and Path.
+  $bcbsma_tour_library_path_mapping_exploded = explode(PHP_EOL, $bcbsma_tour_library_path_mapping->get('library_page_mapping'));
+  foreach ($bcbsma_tour_library_path_mapping_exploded as $val) {
+    $val_exploded = explode('|||', $val);
+    if ($val_exploded[0] == $current_path) {
+      $attachments['#attached']['library'][] = $val_exploded[1];
+      $attachments['#attached']['drupalSettings']['advantage_plan_popup_message_desktop']['config'] = $bcbsma_tour_library_path_mapping->get('advantage_plan_popup_message_desktop');
+      $attachments['#attached']['drupalSettings']['advantage_plan_popup_message_mobile']['config'] = $bcbsma_tour_library_path_mapping->get('advantage_plan_popup_message_mobile');
+    }
+  }
+
+}

@@ -1,0 +1,8 @@
+admin:
+  css:
+    theme:
+      styles/css/admin.css: {}
+
+brightcove:
+  js:
+    '//players.brightcove.net/5981523323001/ERsw61xzk7_default/index.min.js': { type: external }

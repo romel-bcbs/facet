@@ -1,0 +1,15 @@
+bcsma_chat.settings:
+  route_name: bcsma_chat.settings
+  title: General Chat configuration
+  base_route: bcsma_chat.settings
+  weight: 1
+bcsma_chat.cisco_settings:
+  route_name: cisco_chat.settings
+  title: Cicso Chat configuration
+  base_route: bcsma_chat.settings
+  weight: 2
+bcsma_chat.amelia_settings:
+  route_name: amelia_chat.settings
+  title: Amelia Chat configuration
+  base_route: bcsma_chat.settings
+  weight: 3

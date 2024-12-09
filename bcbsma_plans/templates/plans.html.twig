@@ -1,0 +1,135 @@
+{% set currentYear = "now"|date("Y") %}
+
+<div>
+  <div class="plan coh-style-bcbsma-content-container coh-style-medicare-plan"
+      type="box"
+      plan-type="{{info.type}}"  plan-id={{entityId}}
+      data-premium={{premiumAmount}} data-order={{info.order}}
+      {{extraAttributes|raw}}>
+    <div>
+      <h2>{{ info.name }}</h2>
+      <p>
+        <strong>{{ info.year ~ " " ~ info.type }} </strong>
+      </p>
+      <div class="info"
+        hastopbenefits="{{ hasTopBenefits}}">
+        <div class="highlights">
+          <p>
+            <strong>Highlights</strong>
+          </p>
+          {{ planHighlights|raw }}
+        </div>
+        <div class="benefits">
+          <p>
+            <strong>Benefits</strong>
+          </p>{{ info.topBenefits|raw }}
+        </div>
+      </div>
+      {% if info.disclaimer %}
+      <div class='coh-style-disclaimer'>
+      {{ info.disclaimer|raw }}
+      </div>
+      {% endif %}
+      <div class="drug-doctors">
+        {% if doctorSearchStatus %}
+          <div class="coh-style-bcbsma-content-container mySearches doctors">
+            <a href="{{ doctorSearchUrl }}" class="coh-link regular main" title="Add your doctors" target="_self" aria-label="Add your doctors" custom-attributes="main">
+              Add Your Doctors
+            </a>
+            <div class="coh-style-bcbsma-accordion custom plan" type="tooltip">
+              <div class="coh-accordion-tabs">
+                <div class="coh-accordion-tabs-inner coh-accordion-tabs-horizontal-center coh-accordion-tabs-display-accordion-xs accordion coh-accordion-tabs-display-accordion" data-once="cohAccordionTabs">
+                  <div class="coh-accordion-tabs-content-wrapper">
+                    <div class="coh-accordion-title">
+                      <a href="#doctors-{{entityId}}" aria-expanded="false" title="Your doctors" aria-label="Your doctors">
+                        <i class="fa-light fa-user-doctor"></i>
+                        Your Doctors
+                      </a>
+                    </div>
+                    <div id="doctors-{{entityId}}" class="coh-accordion-tabs-content ssa-component coh-component tab-content" style="display: none;">
+                      <div class="coh-container plan">
+                        <div class="coh-container list"></div>
+                        <div class="link">
+                          <a href="{{ doctorSearchUrl }}" class="coh-link regular" title="Add more doctors" aria-label="Add more doctors">
+                            Add More Doctors
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+        {% if drugSearchStatus %}
+          <div class="coh-style-bcbsma-content-container mySearches medications">
+            <a href="{{ drugSearchUrl }}" class="coh-link regular main" title="Add your drugs" aria-label="Add your drugs" custom-attributes="main">
+              Add Your Drugs
+            </a>
+            <div class="coh-style-bcbsma-accordion custom plan" type="tooltip">
+              <div class="coh-accordion-tabs">
+                <div class="coh-accordion-tabs-inner coh-accordion-tabs-horizontal-center coh-accordion-tabs-display-accordion-xs accordion coh-accordion-tabs-display-accordion" data-once="cohAccordionTabs">
+                  <div class="coh-accordion-tabs-content-wrapper">
+                    <div class="coh-accordion-title">
+                      <a href="#medications-{{entityId}}" aria-expanded="false" title="Your drugs" aria-label="Your drugs">
+                        <i class="fa-light fa-capsules"></i>
+                        Your Drugs
+                      </a>
+                    </div>
+                    <div id="medications-{{entityId}}" class="coh-accordion-tabs-content ssa-component coh-component tab-content" style="display: none;">
+                      <div class="coh-container plan">
+                        <div class="coh-container list"></div>
+                        <div class="link details">
+                          <a href="{{ uri ~ "" ~ planAlias }}#prescription" class="coh-link regular" title="Drug cost for this plan" aria-label="Drug cost for this plan">
+                            Drug Cost For This Plan
+                          </a>
+                        </div>
+                        <div class="link">
+                          <a href="{{ drugSearchUrl }}" class="coh-link regular" title="Add more drugs" aria-label="Add more drugs">
+                            Add More Drugs
+                          </a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    <div>
+      <p class="coh-style-medicare-premium">
+        <span>{{"$" ~ premiumAmountParts.0 ~ "."}}<span>{{ premiumAmountParts.1 }}</span></span>
+        <br/>
+        per month
+      </p>
+      {% if currentYear == info.year and month == 12 %}
+        <p class="enrollment-notavailable">{{info.year}} plans are no longer available</p>
+      {% else %}
+        <div class="enroll-now">{{ enrollButton|raw }}</div>
+      {% endif %}
+      <div class="details">
+        <a href="{{ uri ~ "" ~ planAlias }}" class="coh-style-bcbsma-secondary-button"
+          title="View details about {{ info.name }}" aria-label="View details about {{ info.name }}" class="coh-style-bcbsma-link-with-arrow">
+          Plan Details
+        </a>
+      </div>
+      <form>
+        <div class="compare form-item form-type-checkbox"
+          plan-id="{{ entityId }}"
+          plan-name="{{ info.name }}"
+          plan-type="{{ info.type }}"
+          plan-year="{{ info.year }}">
+          <input type="checkbox" disabled id="compare-{{entityId}}">
+          <label for="compare-{{ entityId }}">Add to compare</label>
+        </div>
+      </form>
+    </div>
+  </div>
+    <a href="#compare-list" class="visually-hidden focusable skip-link comparison coh-style-bcbsma-prime-button" tabindex="-1" aria-label="Skip to compare" title="Skip to compare">
+      {{ 'Skip to Compare'|t }}
+    </a>
+</div>

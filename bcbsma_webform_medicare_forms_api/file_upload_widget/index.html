@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="utf-8">
+  <title>FileListUpload</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&amp;display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script  src="file:///Users/rchris03/Downloads/file-upload-value-support/file-list-upload.js"></script>
+<style>@charset "UTF-8";html{line-height:1.15;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%}body{margin:0}html{box-sizing:border-box}*,*:before,*:after{box-sizing:inherit}html{line-height:1.5;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;font-weight:400;color:#000000de}@media only screen and (min-width: 0){html{font-size:14px}}@media only screen and (min-width: 992px){html{font-size:14.5px}}@media only screen and (min-width: 1200px){html{font-size:15px}}*{margin:0;padding:0;box-sizing:border-box;font-family:Roboto}:root{--vdk-color-brand-blue:#2574bb;--vdk-color-deep-blue:#0d4877;--vdk-color-warm-orange:#fc5c3b;--vdk-color-white:#ffffff;--vdk-color-dusty-gray:#999999;--vdk-color-tall-poppy:#ad2929;--vdk-color-old-brick:#8a2121}</style><link rel="stylesheet" href="styles.css" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="styles.css"></noscript></head>
+<body>
+
+  <bcbsma-file-upload-comp id="abc"></bcbsma-file-upload-comp>
+
+  <script>
+    const el = document.querySelector("#abc");
+    el.value =  '{"files":[{"attachmentId":3078,"secretId":"58fd3dca-4d96-4d01-8b83-7ba661330721","attachmentName":"Medicare Advantage vs. Medicare _ Blue Cross Blue Shield of Massachusetts.pdf","status":"success"},{"attachmentId":3079,"secretId":"2447bb41-47b9-4cae-95a2-c9dd1fe7510e","attachmentName":"eicar-adobe-acrobat-javascript-alert.pdf","status":"failure"}],"error":true}';
+    el.addEventListener("onFileUploadListener", (e) => {
+      console.log("1", e.detail, e);
+      console.log(JSON.stringify(e.detail));
+    });
+  </script>
+
+</body></html>

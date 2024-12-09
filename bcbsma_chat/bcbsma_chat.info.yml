@@ -1,0 +1,6 @@
+name: BCBSMA CHAT
+type: module
+description: CHAT module for showing up the CHAT icon on any Drupal page
+core_version_requirement: ^9 || ^10
+package: Custom
+configure: bcsma_chat.settings

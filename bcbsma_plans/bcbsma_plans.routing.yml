@@ -1,0 +1,84 @@
+session_set.county:
+  path: '/medicare/currentuser/{county}'
+  defaults:
+   _controller: 'Drupal\bcbsma_plans\Controller\GetSessionController::setSession'
+   _title: 'Get county availablity'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true
+
+clear_session.county:
+  path: '/medicare/currentuser/clearsession'
+  defaults:
+   _controller: 'Drupal\bcbsma_plans\Controller\GetSessionController::clearSession'
+   _title: 'clear county'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true
+
+psw_data.encrypt:
+  path: '/medicare/plan/info'
+  defaults:
+   _controller: 'Drupal\bcbsma_plans\Controller\PswDataEncryptionController::encrypt'
+   _title: 'Get encrypted value'
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true
+
+redirect.path:
+  path: '/medicare/redirect'
+  defaults:
+   _controller: 'Drupal\bcbsma_plans\Controller\GetRedirectUrl::getRedirectUrl'
+   _title: 'Get redirect URl'
+  methods:  [GET]
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true
+
+comparison.path:
+  path: '/medicare/comparison'
+  defaults:
+   _controller: 'Drupal\bcbsma_plans\Controller\SetComparisonController::setComparisonSession'
+   _title: 'Set Comparison Ids'
+  methods:  [POST]
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true
+
+drug_search.path:
+  path: '/v1/drug-search'
+  defaults:
+   _controller: 'Drupal\bcbsma_plans\Controller\DrugDoctorSearch::drugSearch'
+   _title: 'Drug Search'
+  methods:  [GET]
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true
+
+drug_info.path:
+  path: '/v1/drug-info'
+  defaults:
+   _controller: 'Drupal\bcbsma_plans\Controller\DrugDoctorSearch::drugInfo'
+   _title: 'Drug Search'
+  methods:  [GET]
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true
+
+doctor_search.path:
+  path: '/v1/doctor-search'
+  defaults:
+   _controller: 'Drupal\bcbsma_plans\Controller\DrugDoctorSearch::doctorSearch'
+   _title: 'Doctor Search'
+  methods:  [GET]
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true

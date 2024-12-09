@@ -1,0 +1,59 @@
+<?php
+
+/**
+ * @file
+ * Contains bcbsma_common.module.
+ */
+
+use Drupal\views\Views;
+
+/**
+ * Implements hook_views_query_alter().
+ *
+ * @inheritdoc
+ */
+function bcbsma_common_views_query_alter($view, $query) {
+  if ($view->id() == 'cms_slug' && $view->current_display == 'cms_slug') {
+    $current_path = \Drupal::service('path.current')->getPath();
+    $getAliasByPath = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
+    $view = Views::getView('cms_slug');
+    $view->setExposedInput([
+      'field_urls_value' => $getAliasByPath,
+    ]);
+    $view->setDisplay('cms_slug_count');
+    $view->execute();
+    $view_result = $view->result;
+    if (!empty($view_result)) {
+      $field_name = 'node__field_urls.field_urls_value';
+      foreach ($query->where as &$condition_group) {
+        foreach ($condition_group['conditions'] as &$condition) {
+          if ($condition['field'] == $field_name) {
+            $condition = [
+              'field' => $field_name,
+              'value' => $getAliasByPath,
+              'operator' => 'in',
+            ];
+          }
+        }
+      }
+    }
+  }
+  // Alert.
+  if ($view->id() == 'cms_alert_message') {
+    $cms_current_path = \Drupal::service('path.current')->getPath();
+    $getAliasByPathCMS = \Drupal::service('path_alias.manager')->getAliasByPath($cms_current_path);
+    \Drupal::logger('alert_message')->notice("alert");
+    $field_name = 'node__field_urls.field_urls_value';
+    foreach ($query->where as &$condition_group) {
+      foreach ($condition_group['conditions'] as &$condition) {
+        if ($condition['field'] == $field_name) {
+          $condition = [
+            'field' => $field_name,
+            'value' => ["/default", $getAliasByPathCMS],
+            'operator' => 'in',
+          ];
+        }
+      }
+    }
+  }
+}

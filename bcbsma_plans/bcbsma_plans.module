@@ -1,0 +1,557 @@
+<?php
+
+/**
+ * @file
+ * Contains bcbsma_plans.module.
+ */
+
+use Drupal\bcbsma_plans\Controller\PswDataEncryptionController;
+use Drupal\Component\Utility\UrlHelper;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\TrustedRedirectResponse;
+use Drupal\Core\Url;
+
+/**
+ * Implements hook_inline_entity_form_table_fields_alter().
+ *
+ * @inheritdoc
+ */
+function bcbsma_plans_inline_entity_form_table_fields_alter(&$fields, $context): void {
+  $is_medicare_benefits = FALSE;
+  $is_medicare_benefit_text = FALSE;
+  foreach ($context['allowed_bundles'] as $bundle) {
+    if ($bundle == 'medicare_benefits') {
+      $is_medicare_benefits = TRUE;
+    }
+    if ($bundle == 'medicare_benefit_text') {
+      $is_medicare_benefit_text = TRUE;
+    }
+  }
+  if ($is_medicare_benefits) {
+    unset($fields['status']);
+    $fields['label'] = [
+      "type" => "callback",
+      'label' => t('Benefit Name'),
+      'weight' => 0,
+      "callback" => "auto_entitylabel_inline_entity_label_callback",
+    ];
+    $fields['benefit_category'] = [
+      'type' => 'callback',
+      'label' => t('Benefit Category'),
+      'weight' => 1,
+      'callback' => 'bcbsma_plans_set_benefit_category',
+    ];
+  }
+  if ($is_medicare_benefit_text) {
+    unset($fields['status']);
+    $fields['label'] = [
+      "type" => "callback",
+      'label' => t('Network Name'),
+      'weight' => 0,
+      "callback" => "bcbsma_plans_set_network",
+    ];
+  }
+}
+
+/**
+ * Set benefit category Name.
+ *
+ * @inheritdoc
+ */
+function bcbsma_plans_set_benefit_category($entity): string {
+  $taxonomy_id = [];
+  if (isset($entity->field_benefit_category)) {
+    $taxonomy_id[] = $entity->field_benefit_category->getValue()[0]['target_id'];
+  }
+  return bcbsma_plans_get_taxonomy_name($taxonomy_id);
+}
+
+/**
+ * Set benefit Network.
+ *
+ * @inheritdoc
+ */
+function bcbsma_plans_set_network($entity): string {
+  $ids = [];
+  $taxonomy_ids = [];
+  if (isset($entity->field_benefit_network_type)) {
+    $taxonomy_ids = $entity->field_benefit_network_type->getValue();
+  }
+  foreach ($taxonomy_ids as $taxonomy_id) {
+    $ids[] = $taxonomy_id['target_id'];
+  }
+  return bcbsma_plans_get_taxonomy_name($ids);
+}
+
+/**
+ * Get Taxonomy Name.
+ *
+ * @param mixed[] $taxonomy_ids
+ *   Get Taxonomy Name.
+ *
+ * @return string
+ *   Taxonomy Name.
+ */
+function bcbsma_plans_get_taxonomy_name(array $taxonomy_ids): string {
+  $term_name = '';
+  $terms = \Drupal::service('entity_type.manager')
+    ->getStorage('taxonomy_term')->loadMultiple($taxonomy_ids);
+  foreach ($terms as $term) {
+    if (count($terms) != 1) {
+      $term_name = $term_name . ' ' . $term->getName();
+    }
+    else {
+      $term_name = $term->getName();
+    }
+  }
+  return $term_name;
+}
+
+/**
+ * Implements hook_form_FORM_alter().
+ *
+ * @inheritdoc
+ */
+function bcbsma_plans_form_alter(&$form, FormStateInterface $form_state, $form_id): void {
+  $medicareConfig = \Drupal::configFactory()->getEditable('medicare_options.site_config_form');
+  if (strpos($form_id, 'webform_submission_zip_code_node') !== FALSE) {
+    // Get all the parameters from the request.
+    $url_paramters = \Drupal::request()->query->all();
+    if (!empty($url_paramters) && isset($url_paramters['redirectUrl'])) {
+      $isExternal = UrlHelper::isExternal($url_paramters['redirectUrl']);
+      $isValid = \Drupal::service('path.validator')->isValid($url_paramters['redirectUrl']);
+      if (!$isExternal && $isValid) {
+        // Attach a Drupal setting.
+        $form['#attached']['drupalSettings']['redirectUrl'] = $url_paramters['redirectUrl'];
+      }
+      else {
+        // Attach a Drupal setting.
+        $form['#attached']['drupalSettings']['redirectUrl'] = $medicareConfig->get('zipcode_redirect_to') ?? '';
+      }
+    }
+    $form['#cache'] = ['max-age' => 0];
+  }
+
+  // Attaching library to the node edit form.
+  if ($form_id == 'node_medicare_plans_edit_form' && isset($form['field_plan_benefits'])) {
+    $form['field_plan_benefits']['widget']['actions']['ief_add']['#value'] = t('Add Benefit');
+  }
+  if (in_array($form_id,
+    [
+      'node_medicare_plans_edit_form',
+      'node_medicare_plans_form',
+    ])) {
+    $form['#attached']['library'][] = 'bcbsma_plans/plan-edit';
+  }
+
+  // Check if current form is Enroll now Form.
+  // Checking Form Request parameters.
+  if (strpos($form_id, 'webform_submission_medicare_enroll_now') !== FALSE) {
+    // Get all the parameters from the request.
+    $url_paramters = \Drupal::request()->query->all();
+    // Checking if the Parameter have planType.
+    if (!empty($url_paramters) && isset($url_paramters['planType'])) {
+      // Checking if planType is Advantage.
+      if (strpos($url_paramters['planType'], 'Supplement') == FALSE) {
+        // Removing partA and part B for advantage plans.
+        unset($form['elements']['partab']['part_a_eligible']);
+        unset($form['elements']['partab']['part_b_eligible']);
+      }
+      $dynamic_options = [];
+      // Getting current month and Year and converting to int.
+      $current_month = (int) date('m');
+      $current_year = date('Y');
+      // Getting plan year from query perameters.
+      $planYear = $url_paramters['planYear'];
+      // Calculate the number of remaining months in the year.
+      $configMonth = $medicareConfig->get('month');
+      $currentMonth = (empty($configMonth) && $configMonth == NULL) ? $current_month : (int) $configMonth;
+      $remaining_months = 12 - $currentMonth;
+      // Consider up to 3 months or remaining months.
+      $num_of_months = min(3, $remaining_months);
+      // Checking if current Year is same as plan year.
+      if ($current_year == $planYear) {
+        // Looping through number of month to create dynamic array of options.
+        for ($i = 1; $i <= $num_of_months; $i++) {
+          $month = (string) $currentMonth + $i;
+          $year = $current_year;
+          // Formating month with 0 on left.
+          $date = date_create($year . '-' . $month);
+          // $monthFormate = str_pad($month, 2, '0', STR_PAD_LEFT);
+          // Creating Dynamic List.
+          $dateFormated = date_format($date, "m/Y");
+          $dynamic_options[$dateFormated] = $dateFormated;
+        }
+      }
+      else {
+        // Else when plan year is different that current year.
+        for ($i = 0; $i < 3 - $num_of_months; $i++) {
+          $month = (string) 1 + $i;
+          $year = $planYear;
+          $date = date_create($year . '-' . $month);
+          $dateFormated = date_format($date, "m/Y");
+          // Dynamic list will be starting three month for next year.
+          $dynamic_options[$dateFormated] = $dateFormated;
+        }
+      }
+      // Fetch the dynamic select options based on your logic.
+      // Modify the select element to add dynamic options.
+      $form['elements']['dates']['coverage_date']['#options'] = $dynamic_options;
+      // Adding validation to the form with callback method.
+      $form['#validate'][] = 'bcbsma_plans_enroll_now_validation';
+    }
+
+    // Adding Close button to enroll now form.
+    $form['actions']['custom_action'] = [
+      '#type' => 'submit',
+      '#value' => t('Close Window'),
+      '#attributes' => [
+        'class' => ['model-close'],
+      ],
+      '#attached' => [
+        'library' => [
+          'bcbsma_plans/enroll_now',
+        ],
+      ],
+    ];
+
+    // Adding submit redirect with call back method.
+    // To redirect to sales force.
+    foreach (array_keys($form['actions']) as $action) {
+      if ($action != 'preview' && isset($form['actions'][$action]['#type']) && $form['actions'][$action]['#type'] === 'submit') {
+        $form['actions'][$action]['#submit'][] = 'bcbsma_plans_form_submit_redirect';
+      }
+    }
+  }
+
+}
+
+/**
+ * Implements hook_preprocess_views_view_field().
+ *
+ * @inheritdoc
+ */
+function bcbsma_plans_preprocess_views_view_field(array &$variables) {
+  $uri = \Drupal::service('path.current')->getPath();
+  $medicareConfig = \Drupal::configFactory()->getEditable('medicare_options.site_config_form');
+  $configMonth = $medicareConfig->get('month');
+  $month = (empty($configMonth) && $configMonth == NULL) ? idate('m') : (int) $configMonth;
+  $drugSearchUrl = $medicareConfig->get('drug_search_page_url') ?? '';
+  $doctorSearchUrl = $medicareConfig->get('doctor_search_page_url') ?? '';
+  $planHighlights = "";
+  $info = [];
+  $drugSearchStatus = FALSE;
+  $doctorSearchStatus = FALSE;
+  // Use this code and update view IDs when using for plan listing page.
+  if (
+    isset($variables['view']) && $variables['view']->id() == 'medicare_plan_type_listing' &&
+    isset($variables['view']->field) && count($variables['view']->field) > 0
+  ) {
+    $entity_id = $variables['row']->_entity->id();
+    $medicareData = \Drupal::service('bcbsma_plans.service');
+    $planInfo = $medicareData->getPlanInfo([$entity_id]);
+    foreach ($planInfo as $plan) {
+      $info = $plan;
+    }
+    if ($variables['field']->field == 'field_plan_premium') {
+      try {
+        $planAlias = \Drupal::service('path_alias.manager')->getAliasByPath('/node/' . $entity_id);
+        $planHighlights = '<ul>';
+        if (!empty($info['highlights'])) {
+          foreach ($info['highlights'] as $highlight) {
+            $planHighlights .= "<li>" . $highlight . "</li>";
+          }
+        }
+        $planHighlights .= '</ul>';
+        $session = \Drupal::request()->getSession();
+        $county = !is_null($session->get("county")) ? $session->get("county") : '';
+        $zipCode = !is_null($session->get("zipCode")) ? $session->get("zipCode") : '';
+        if (strpos($info['type'], 'Advantage') !== FALSE) {
+          $attributes = 'data-outofpocket="' . $info['planHighlights']['outOfPocket'] . '"
+              data-pcp-copay="' . $info['planHighlights']['pcpCopay'] . '"
+              data-specialist-copay="' . $info['planHighlights']['specialistCopay'] . '"';
+        }
+        else {
+          $attributes = '';
+        }
+        if (strpos($info['type'], 'Prescription') !== FALSE || strpos($info['type'], 'Dental') !== FALSE) {
+          $premium = $info['premium'];
+        }
+        else {
+          $premium = $medicareData->getPremium($county, $entity_id);
+        }
+        $premiumAmount = (!empty($premium) || $premium === '0') ? $premium : 'X.XX';
+        if ($premiumAmount !== 'X.XX') {
+          $premiumAmount = number_format((float) $premium, 2, '.', '');
+        }
+        $premiumAmountParts = explode('.', $premiumAmount);
+
+        $hasTopBenefits = $info['topBenefits'] !== "" ? "true" : "false";
+        $enrollButton = '<a href="/medicare/enroll-now?planName=' . preg_replace('/[^A-Za-z0-9 ]/', '', $info['name']) . '&planType=' . $info['type'] . '&planYear=' . $info['year'] . '&zipCode=' . $zipCode . '"
+                    class="use-ajax coh-style-bcbsma-prime-button" title="Enroll Now to ' . $info['name'] . '" aria-label="Enroll Now to ' . $info['name'] . '" data-dialog-type="modal" disabled>Enroll now</a>';
+        if (strpos($info['type'], 'Prescription') !== FALSE) {
+          $drugSearchStatus = TRUE;
+          $prescriptionUrl = $medicareConfig->get('prescription_url');
+          $enrollButton =
+          '<a href="' . $prescriptionUrl . '" class="coh-style-bcbsma-prime-button" title="Enroll Now to ' . $info['name'] . '" aria-label="Enroll Now to ' . $info['name'] . '" external-link-message="enroll-prescription">Enroll now</a>';
+        }
+        if ($info['year'] == date("Y") && idate('m') === 12 && strpos($info['type'], 'Prescription') === FALSE) {
+          $enrollButton = '<a href="#" class="coh-style-bcbsma-prime-button" title="Enroll Now to ' . $info['name'] . '" aria-label="Enroll Now to ' . $info['name'] . '" external-link-message="enrollment-closed">Enroll now</a>';
+        }
+        if (strpos($info['type'], 'Advantage') !== FALSE) {
+          $drugSearchStatus = TRUE;
+          $doctorSearchStatus = TRUE;
+        }
+        if (strpos($info['type'], 'Dental') !== FALSE) {
+          $doctorSearchStatus = TRUE;
+        }
+        if (!$medicareConfig->get('drug_search_service')) {
+          $drugSearchStatus = FALSE;
+        }
+
+        if (!$medicareConfig->get('doctor_search_service')) {
+          $doctorSearchStatus = FALSE;
+        }
+
+        if ($premiumAmount === 'X.XX') {
+          $variables['output'] = [
+            '#type' => 'inline_template',
+            '#template' => '',
+          ];
+        }
+        else {
+          $variables['output'] = [
+            '#type' => 'template',
+            '#template' => 'plans',
+            '#theme' => 'plans',
+            '#info' => $info,
+            '#entityId' => $entity_id,
+            "#premiumAmount" => $premiumAmount,
+            '#extraAttributes' => $attributes,
+            "#hasTopBenefits" => $hasTopBenefits,
+            "#planHighlights" => $planHighlights,
+            "#drugSearchUrl" => $drugSearchUrl,
+            "#doctorSearchUrl" => $doctorSearchUrl,
+            "#uri" => $uri,
+            "#planAlias" => $planAlias,
+            "#premiumAmountParts" => $premiumAmountParts,
+            "#enrollButton" => $enrollButton,
+            "#drugSearchStatus" => $drugSearchStatus,
+            "#doctorSearchStatus" => $doctorSearchStatus,
+            "#month" => $month,
+          ];
+        }
+      }
+      catch (Exception $exception) {
+        \Drupal::logger('Bcbsma Plans Session')->info($exception->getMessage());
+      }
+    }
+  }
+}
+
+/**
+ * Redirect Form validation.
+ *
+ * @inheritdoc
+ */
+function bcbsma_plans_enroll_now_validation(&$form, FormStateInterface $form_state) {
+  // Get all the parameters from the request.
+  $url_paramters = \Drupal::request()->query->all();
+  // Get forstate value for DOB.
+  if ($form_state->getValue('date_of_birth')) {
+    // Checking if DOB is lessthan current time.
+    if (strtotime($form_state->getValue('date_of_birth')) > \Drupal::time()->getCurrentTime()) {
+      // If not set This Error.
+      $form_state->setErrorByName('date_of_birth', 'Date of Birth should not be after today.');
+    }
+    // Date should be after 1900.
+    $date_1900 = new DateTime("01/01/1900");
+    $date_1900_timestamp = $date_1900->getTimestamp();
+    // Validating.
+    if (strtotime($form_state->getValue('date_of_birth')) < $date_1900_timestamp) {
+      $form_state->setErrorByName('date_of_birth', 'Date of Birth should not be before 01/01/1900.');
+    }
+    if (!empty($url_paramters) && isset($url_paramters['planType'])) {
+      if (strpos($url_paramters['planType'], 'Dental') !== FALSE) {
+        try {
+          $min_dental_age = "65";
+          // Create a DateTime object using the user's date of birth.
+          $dob = new DateTime($form_state->getValue('date_of_birth'));
+          // We need to compare the user's date of birth with today's date.
+          $now = new DateTime();
+          // Calculate the time difference between the two dates.
+          $difference = $now->diff($dob);
+          // Get the difference in years, as we are looking for the user's age.
+          $age = $difference->y;
+          if ($age < $min_dental_age) {
+            $form_state->setErrorByName('date_of_birth', t('You must be 65 years or older to enroll in this plan.'));
+          }
+        }
+        catch (Exception $e) {
+          $form_state->setErrorByName('date_of_birth', t('Please Enter Correct Date Format'));
+        }
+      }
+    }
+  }
+
+  // Validating Part A Field with business rules.
+  if ($form_state->getValue('part_a_eligible')) {
+    // Date should be on or after 1965.
+    $date_1065 = new DateTime("01/01/1965");
+    $date_part_a = new DateTime("01/01/2020");
+    // Creating Date Formate m/Y.
+    $part_a_eligible = DateTime::createFromFormat('m/Y', $form_state->getValue('part_a_eligible'));
+    // Checking with regression expression entered date matches.
+    // Regular expression matches a date in the format MM/YYYY.
+    // if not returns error.
+    if (!preg_match('^(((0)[0-9])|((1)[0-2]))(\/)\d{4}$^', $form_state->getValue('part_a_eligible'))) {
+      $form_state->setErrorByName('part_a_eligible', 'Part A date must follow MM/YYYY format.');
+    }
+    // Logging Part A eligible.
+    \Drupal::logger('medicare_filter_popup')->info('<pre><code>' . print_r($part_a_eligible, TRUE) . '</code> </pre>');
+    // Check if part A is an Object.
+    // validatig based on business logic.
+    if (is_object($part_a_eligible)) {
+      if (($part_a_eligible->getTimestamp() > strtotime(date('Y-m-d', \Drupal::time()->getCurrentTime()) . " +3 months 1 day")) || ($part_a_eligible->getTimestamp() < $date_1065->getTimestamp())) {
+        $form_state->setErrorByName('part_a_eligible', 'Part A date must be between January 1965 to 3 months after the current month.');
+      }
+    }
+    else {
+      $form_state->setErrorByName('part_a_eligible', 'Part A date is invalid.');
+    }
+
+    if (strpos($url_paramters['planName'], 'Bronze') !== FALSE) {
+      if ($part_a_eligible->getTimestamp() > $date_part_a->getTimestamp()) {
+        $form_state->setErrorByName('part_a_eligible', 'Part A effective date must be prior to 01/01/2020');
+      }
+    }
+  }
+
+  // Validating Part B Field with business rules.
+  if ($form_state->getValue('part_b_eligible')) {
+    // Date should be on or after 1965.
+    $date_1065 = new DateTime("01/01/1965");
+    // Creating Date Formate m/Y.
+    $part_b_eligible = DateTime::createFromFormat('m/Y', $form_state->getValue('part_b_eligible'));
+    // Checking with regression expression entered date matches.
+    // Regular expression matches a date in the format MM/YYYY.
+    // if not returns error.
+    if (!preg_match('^(((0)[0-9])|((1)[0-2]))(\/)\d{4}$^', $form_state->getValue('part_b_eligible'))) {
+      $form_state->setErrorByName('part_b_eligible', 'Part B date must follow MM/YYYY format.');
+    }
+    // Check if part B is an Object.
+    // validatig based on business logic.
+    if (is_object($part_b_eligible)) {
+      if (($part_b_eligible->getTimestamp() > strtotime(date('Y-m-d', \Drupal::time()->getCurrentTime()) . " +3 months 1 day")) || ($part_b_eligible->getTimestamp() < $date_1065->getTimestamp())) {
+        $form_state->setErrorByName('part_b_eligible', 'Part B date must be between January 1965 to 3 months after the current month.');
+      }
+    }
+    else {
+      $form_state->setErrorByName('part_b_eligible', 'Part B date is invalid.');
+    }
+  }
+}
+
+/**
+ * Redirect Form on submit.
+ *
+ * @param mixed[] $form
+ *   Form instance.
+ * @param \Drupal\Core\Form\FormStateInterface $form_state
+ *   FormStateInterface.
+ */
+function bcbsma_plans_form_submit_redirect(array $form, FormStateInterface $form_state): void {
+  // Getting all Query parameters.
+  $url_paramters = \Drupal::request()->query->all();
+  // Retreving formstate information.
+  $date_of_birth = date('mdY', strtotime($form_state->getValue('date_of_birth')));
+  $coverage_date = str_replace('/', '', $form_state->getValue('coverage_date'));
+  // Data from Query Info.
+  $planName = trim(preg_replace('/^\d\d\d\d\b/', '', $url_paramters['planName']));
+  $zipCode = $url_paramters['zipCode'];
+
+  // Retreving Part A and Part B if exist.
+  $part_a_eligible = empty($form_state->getValue('part_a_eligible')) ? '' : str_replace('/', '', $form_state->getValue('part_a_eligible'));
+  $part_b_eligible = empty($form_state->getValue('part_b_eligible')) ? '' : str_replace('/', '', $form_state->getValue('part_b_eligible'));
+
+  // Creating array with info.
+  $data = [
+    'plan' => preg_replace('/\s+/', ' ', $planName),
+    'dob' => $date_of_birth,
+    'coverageEffectiveDate' => $coverage_date,
+    'zipCode' => $zipCode,
+  ];
+  \Drupal::logger('Enroll Data on submit')->info(print_r($data, TRUE));
+  // Adding if Part A and Part B not empty to $data array.
+  if (!empty($part_a_eligible) && !empty($part_b_eligible)) {
+    $data['partAEligibleDate'] = $part_a_eligible;
+    $data['partBEligibleDate'] = $part_b_eligible;
+  }
+
+  // Redirect to Sales force with Encrypted Pop-up form Submitted Data.
+  // Creating encryption class instance.
+  $encryptionController = new PSWDataEncryptionController(\Drupal::service('key.repository'), \Drupal::service('request_stack'), \Drupal::service('logger.factory'));
+  // Get reposnse from encrypt method.
+  $response = $encryptionController->encrypt($data);
+  // Checking if response is not emtpy.
+  if (!empty($response) && isset($response['redirecturl'])) {
+    $response = new TrustedRedirectResponse(Url::fromUri($response['redirecturl'])->toString());
+    // Setting dynamic redirect.
+    $form_state->setResponse($response);
+  }
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ *
+ *  @inheritdoc
+ */
+function bcbsma_plans_preprocess_facets_item_list(array &$variables): void {
+  $facet = $variables['facet'];
+  if (!in_array($facet->id(), ['plan_year', 'plan_year_prescription',
+    'plan_year_supplement',
+    'plan_year_dental',
+  ])) {
+    return;
+  }
+
+  $results = $facet->getResults();
+  foreach ($results as $key => $result) {
+    $entityId = $result->getRawValue();
+    $term = \Drupal::entityTypeManager()->getStorage('taxonomy_term')->load($entityId);
+    if ($term && $term->isPublished() === FALSE) {
+      unset($variables['items'][$key]);
+    }
+  }
+}
+
+/**
+ * Implements hook_theme().
+ *
+ * @inheritdoc
+ */
+function bcbsma_plans_theme(array $existing, string $type, string $theme, $path): array {
+  return [
+    'plans' => [
+      'template' => 'plans',
+      'variables' => [
+        'info' => NULL,
+        'entityId' => NULL,
+        'premiumAmount' => NULL,
+        'extraAttributes' => NULL,
+        'planHighlights' => NULL,
+        'hasTopBenefits' => NULL,
+        'drugSearchUrl' => NULL,
+        'doctorSearchUrl' => NULL,
+        'disclaimer' => NULL,
+        'planAlias' => NULL,
+        'uri' => NULL,
+        'premiumAmountParts' => NULL,
+        'enrollButton' => NULL,
+        'drugSearchStatus' => NULL,
+        'doctorSearchStatus' => NULL,
+        'month' => NULL,
+      ],
+    ],
+  ];
+}

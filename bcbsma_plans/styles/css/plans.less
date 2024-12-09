@@ -1,0 +1,85 @@
+form.node-medicare-plans-edit-form{
+  > .layout-node-form{
+    display: flex;
+
+    flex-direction: column-reverse;
+    > .layout-region--node-footer{
+      width: 100%;
+      padding: 0;
+      .layout-region__content{
+        max-width: 100%;
+        margin-top: 0;
+        display: flex;
+        justify-content: space-between;
+        .divider{
+          display: none;
+        }
+        [id*=edit-moderation-state]{
+          display: flex;
+          > div{
+            label{
+              margin-right: 10px;
+            }
+            &:last-child{
+              margin-left: 20px;
+              display: flex;
+              align-items: center;
+            }
+          }
+        }
+        .form-actions{
+          margin-bottom: 20px;
+        }
+      }
+    }
+  }
+}
+.layout-region.layout-region--node-main{
+  width: 100%;
+  padding: 0;
+  .layout-region__content{
+    max-width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    [class*='field--name-title']{
+      width: 100%;
+      input[name*=title]{
+        width: 100%;
+      }
+    }
+    .plan-info-group{
+      width: 30%;
+    }
+    .plan-benefits-group{
+      width: calc(~'70% - 22px');
+      margin-left: 20px;
+    }
+  }
+}
+.layout-region--node-secondary{
+  display: none
+}
+
+.term-reference-tree-level{
+  .no-term-reference-tree-button{
+    display: none;
+  }
+}
+table{
+  &[id*='ief-entity-table-edit-field-plan-benefits-entities']{
+    tr{
+      td, th{
+         &[class*='ief-tabledrag']{
+          width: 40px;
+        }
+        &:last-child{
+          width: 380px;
+        }
+      }
+    }
+  }
+}
+
+
+

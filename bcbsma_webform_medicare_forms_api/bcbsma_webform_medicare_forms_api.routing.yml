@@ -1,0 +1,59 @@
+mmssformapi.settings:
+  path: '/admin/config/mmss_form'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'MMSS Form Config'
+  requirements:
+    _permission: 'administer site configuration'
+mmssformapi.content:
+  path: '/admin/config/mmss_form/resend_mmss_form_api'
+  defaults:
+    _form: '\Drupal\bcbsma_webform_medicare_forms_api\Controller\APIResendController'
+    _title: 'Resend Failed Form Data - MSS - AOR_MAPD & AOR_MEDEX'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+mmssformapi.webform_api_data_mapping:
+  path: '/admin/config/mmss_form/webform_api_data_mapping'
+  defaults:
+    _form: '\Drupal\bcbsma_webform_medicare_forms_api\Controller\WebformAPIDataMapping'
+    _title: 'Form API - Data Mapping!'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+mmssformapi.general_config:
+  path: '/admin/config/mmss_form/general_config_for_forms'
+  defaults:
+    _form: '\Drupal\bcbsma_webform_medicare_forms_api\Controller\GeneralConfigForForms'
+    _title: 'General Configs'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+mmssformapi.adobe_tag:
+  path: '/admin/config/mmss_form/adobe_tag'
+  defaults:
+    _form: '\Drupal\bcbsma_webform_medicare_forms_api\Controller\AdobeTag'
+    _title: 'Adobe Tags'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+mmssformapi.legal_rep_file_upload_config:
+  path: '/admin/config/mmss_form/legal_rep_file_upload_config'
+  defaults:
+    _form: '\Drupal\bcbsma_webform_medicare_forms_api\Controller\LegalRepFileUploadConfig'
+    _title: 'Legal Rep File Upload Config'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+mmssformapi.dashboard:
+  path: '/myaccount_dashboard'
+  defaults:
+    _controller: '\Drupal\bcbsma_webform_medicare_forms_api\Controller\MyAccountDashboard::content'
+    _title: 'My Dashboards'
+  requirements:
+    _role: 'authenticated'

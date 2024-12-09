@@ -1,0 +1,30 @@
+mmssformapi.settings:
+  title: 'MMSS Forms Config'
+  route_name: mmssformapi.settings
+  parent: system.admin_config
+  description: 'Configure Forms'
+  weight: -10
+mmssformapi.content:
+  title: 'Resend Failed Form Data - MSS - AOR_MAPD & AOR_MEDEX'
+  parent: mmssformapi.settings
+  description: 'Can be used to resend the failed data'
+  weight: 2
+  route_name: mmssformapi.content
+mmssformapi.webform_api_data_mapping:
+  title: 'Form API - Data Mapping!'
+  parent: mmssformapi.settings
+  description: ''
+  weight: 1
+  route_name: mmssformapi.webform_api_data_mapping
+mmssformapi.general_config:
+  title: 'General Configs'
+  parent: mmssformapi.settings
+  description: ''
+  weight: 0
+  route_name: mmssformapi.general_config
+mmssformapi.legal_rep_file_upload_config:
+  title: 'Legal Rep File Upload Config'
+  parent: mmssformapi.settings
+  description: ''
+  weight: 0
+  route_name: mmssformapi.legal_rep_file_upload_config

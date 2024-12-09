@@ -1,0 +1,17 @@
+plan-edit:
+  css:
+    theme:
+      styles/css/plans.css: {}
+
+myblue_login_component:
+  version: 1.0
+  css:
+    theme:
+      # styles/css/styles.css: { }
+  js:
+    styles/js/mybluelogin.js: { minified: true }
+
+enroll_now:
+  version: 1.0
+  js:
+    styles/js/enrollnow.js: { }

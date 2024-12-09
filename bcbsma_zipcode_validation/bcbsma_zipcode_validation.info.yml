@@ -1,0 +1,5 @@
+name: BCBS Medicare - ZipCode Validation
+type: module
+description: ZipCode Validation - With user entered values.
+core_version_requirement: ^10
+package: Medicare

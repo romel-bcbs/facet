@@ -1,0 +1,8 @@
+name: BCBSMA Webform MMSS form API - Medicare
+type: module
+description: Send data to Form Processing system through APIgee API.
+core_version_requirement: ^10
+package: Medicare
+
+dependencies:
+  - drupal:key

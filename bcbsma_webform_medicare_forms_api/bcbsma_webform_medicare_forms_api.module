@@ -1,0 +1,170 @@
+<?php
+
+/**
+ * @file
+ * Contains bcbsma_webform_medicare_forms_api.module.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
+use Drupal\views\Views;
+use Drupal\webform\Entity\WebformSubmission;
+
+/**
+ * Implements hook_cron().
+ */
+function bcbsma_webform_medicare_forms_api_cron(): void {
+  $data_resend_settings = \Drupal::config('bcbsma_webform_medicare_forms_api.data_resend_settings');
+  $logger = \Drupal::logger('bcbsma_webform_medicare_forms_api_cron');
+  $logger->notice('Resend data Cron Job - Executed');
+  if ($data_resend_settings->get('medicare_field_data_resend_settings_view')) {
+    $view = Views::getView(trim($data_resend_settings->get('medicare_field_data_resend_settings_view')));
+  }
+  else {
+    $view = Views::getView('medicare_field_data_resend_settings_view');
+  }
+  $view->execute('page_1');
+  $view->execute();
+  $results = $view->result;
+  $logger->notice('Resend data Cron Job - Results : @sid', ['@sid' => serialize($results)]);
+  foreach ($results as $val) {
+    if (isset($val->sid)) {
+      $logger->notice('Resend data Cron Job - Sid : @sid', ['@sid' => $val->sid]);
+      $webform_submission = WebformSubmission::load($val->sid);
+      $webform_submission->save();
+    }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Get Plan Highlights.
+ *
+ * @inheritdoc
+ */
+function bcbsma_webform_medicare_forms_api_form_alter(&$form, FormStateInterface &$form_state, $form_id) {
+  $current_path = \Drupal::service('path.current')->getPath();
+  if (\Drupal::config('bcbsma_webform_medicare_forms_api.general_config')->get('date_timestamp_update_js_add')) {
+    $add_js_file_path = array_map('trim', explode(PHP_EOL, \Drupal::config('bcbsma_webform_medicare_forms_api.general_config')->get('date_timestamp_update_js_add')));
+    if (in_array($current_path, $add_js_file_path)) {
+      $form['#attached']['library'][] = 'bcbsma_webform_medicare_forms_api/medicare-admin-form-update';
+    }
+  }
+  $formid_compare = 'webform_submission';
+  if (strpos($form_id, $formid_compare) !== FALSE) {
+    $form['#attached']['library'][] = 'bcbsma_webform_medicare_forms_api/medicare-form-reset-browser-back';
+    if (strpos($form_id, 'seminar_registration') !== FALSE) {
+      $form['#cache'] = ['max-age' => 0];
+    }
+  }
+  $formid_listing = 'seminar-listing-page';
+  if ($form_id == 'views_exposed_form' && (strpos($form['#id'], $formid_listing) !== FALSE)) {
+    $form['#attached']['library'][] = 'bcbsma_webform_medicare_forms_api/medicare-local-datetime-popup';
+  }
+  $formid_listing = 'webform_submission_legal_representative_form';
+  if (strpos($form_id, $formid_listing) !== FALSE) {
+    $form['#attached']['library'][] = 'bcbsma_webform_medicare_forms_api/legalrep-label-update';
+    if (!isset($form_state->getUserInput()['form_build_id'])) {
+      $form['#attached']['library'][] = 'bcbsma_webform_medicare_forms_api/legalrep-localstorage-remove';
+    }
+    $form['elements']['power_of_attorney_container']['power_of_attorney_file_upload']['#type'] = 'markup';
+    $form['elements']['power_of_attorney_container']['power_of_attorney_file_upload']['#title'] = t('power_of_attorney_file_upload');
+    $form['elements']['power_of_attorney_container']['power_of_attorney_file_upload']['#markup'] = Markup::create('<bcbsma-file-upload-comp></bcbsma-file-upload-comp>');
+    $form['elements']['power_of_attorney_container']['power_of_attorney_file_upload']['#weight'] = 5;
+    $form['elements']['power_of_attorney_container']['power_of_attorney_file_upload_error']['#type'] = 'textfield';
+    $form['elements']['power_of_attorney_container']['power_of_attorney_file_upload_error']['#weight'] = 6;
+    $form['elements']['health_care_proxy_container']['health_care_proxy_file_upload']['#type'] = 'markup';
+    $form['elements']['health_care_proxy_container']['health_care_proxy_file_upload']['#title'] = t('health_care_proxy_file_upload');
+    $form['elements']['health_care_proxy_container']['health_care_proxy_file_upload']['#markup'] = Markup::create('<bcbsma-file-upload-comp></bcbsma-file-upload-comp>');
+    $form['elements']['health_care_proxy_container']['health_care_proxy_file_upload']['#weight'] = 5;
+    $form['elements']['health_care_proxy_container']['health_care_proxy_file_upload_error']['#type'] = 'textfield';
+    $form['elements']['health_care_proxy_container']['health_care_proxy_file_upload_error']['#weight'] = 6;
+    $form['elements']['executor_of_estate_container']['executor_of_estate_file_upload']['#type'] = 'markup';
+    $form['elements']['executor_of_estate_container']['executor_of_estate_file_upload']['#title'] = t('executor_of_estate_file_upload');
+    $form['elements']['executor_of_estate_container']['executor_of_estate_file_upload']['#markup'] = Markup::create('<bcbsma-file-upload-comp></bcbsma-file-upload-comp>');
+    $form['elements']['executor_of_estate_container']['executor_of_estate_file_upload']['#weight'] = 5;
+    $form['elements']['executor_of_estate_container']['executor_of_estate_file_upload_error']['#type'] = 'textfield';
+    $form['elements']['executor_of_estate_container']['executor_of_estate_file_upload_error']['#weight'] = 6;
+    $form['elements']['court_appointed_guardian_container']['court_appointed_guardian_file_upload']['#type'] = 'markup';
+    $form['elements']['court_appointed_guardian_container']['court_appointed_guardian_file_upload']['#title'] = t('court_appointed_guardian_file_upload');
+    $form['elements']['court_appointed_guardian_container']['court_appointed_guardian_file_upload']['#markup'] = Markup::create('<bcbsma-file-upload-comp></bcbsma-file-upload-comp>');
+    $form['elements']['court_appointed_guardian_container']['court_appointed_guardian_file_upload']['#weight'] = 5;
+    $form['elements']['court_appointed_guardian_container']['court_appointed_guardian_file_upload_error']['#type'] = 'textfield';
+    $form['elements']['court_appointed_guardian_container']['court_appointed_guardian_file_upload_error']['#weight'] = 6;
+    $form['elements']['other_document_container']['other_document_file_upload']['#type'] = 'markup';
+    $form['elements']['other_document_container']['other_document_file_upload']['#title'] = t('other_document_file_upload');
+    $form['elements']['other_document_container']['other_document_file_upload']['#markup'] = Markup::create('<bcbsma-file-upload-comp></bcbsma-file-upload-comp>');
+    $form['elements']['other_document_container']['other_document_file_upload']['#weight'] = 5;
+    $form['elements']['other_document_container']['other_document_file_upload_error']['#type'] = 'textfield';
+    $form['elements']['other_document_container']['other_document_file_upload_error']['#weight'] = 6;
+    $legal_representative_form_angular_file_upload = \Drupal::service('key.repository')->getKeys(['legal_representative_mmss_form_api'])['legal_representative_mmss_form_api']->getKeyValues()['angular_file_upload'];
+    $form['#attached']['library'][] = 'bcbsma_webform_medicare_forms_api/medicare-file-upload';
+    $legal_rep_file_upload_config = \Drupal::config('bcbsma_webform_medicare_forms_api.legalrep_upload_config');
+    $bcbsma_webform_medicare_forms_api = \Drupal::config('bcbsma_webform_medicare_forms_api.field_mapping');
+    $angular_file_upload['angular_file_upload'] = [
+      'apiBaseUrl' => $legal_representative_form_angular_file_upload['apiBaseUrl'],
+      'clientName' => $legal_representative_form_angular_file_upload['clientName'],
+      'clientSessionId' => md5(time()),
+      'clientVersion' => $legal_representative_form_angular_file_upload['clientVersion'],
+      'trackingId' => md5(time()),
+      'apiEnvironment' => $legal_representative_form_angular_file_upload['x-apienvironment'],
+      'max_file_size_mb' => $legal_rep_file_upload_config->get('max_file_size_mb'),
+      'max_files_upload' => $legal_rep_file_upload_config->get('max_files_upload'),
+      'total_files_limit_exceeded_mb' => $legal_rep_file_upload_config->get('total_files_limit_exceeded_mb'),
+      'accepted_file_format' => $legal_rep_file_upload_config->get('accepted_file_format'),
+      'atleast_one_file' => $legal_rep_file_upload_config->get('atleast_one_file'),
+      'required_documentation' => $legal_rep_file_upload_config->get('required_documentation'),
+      'size_limit_exceeded' => $legal_rep_file_upload_config->get('size_limit_exceeded'),
+      'total_limit_exceeded' => $legal_rep_file_upload_config->get('total_limit_exceeded'),
+      'doc_limit_exceeded' => $legal_rep_file_upload_config->get('doc_limit_exceeded'),
+      'unsupported_format' => $legal_rep_file_upload_config->get('unsupported_format'),
+      'error_msg_popup' => $bcbsma_webform_medicare_forms_api->get('medicare_field_data_error_confirm_msg'),
+    ];
+    $form['#attached']['drupalSettings']['LegalRepFileUpload']['config'] = $angular_file_upload;
+  }
+}
+
+/**
+ * Implements hook_preprocess_webform_confirmation().
+ *
+ * @inheritdoc
+ */
+function bcbsma_webform_medicare_forms_api_preprocess_webform_confirmation(array &$variables) {
+  /**
+   * @var \Drupal\webform\WebformInterface
+   * $webform
+   * */
+  $webform = $variables['webform'];
+
+  /**
+   * @var \Drupal\webform\WebformSubmissionInterface
+   * $webform_submission
+   */
+  $webform_submission = $variables['webform_submission'];
+  $status_array = [
+    "sign_authorized_representative",
+  ];
+  if (in_array($webform->id(), $status_array) && !$webform_submission->getElementData('data_send_successfully_to_form_api')) {
+    $logger = \Drupal::logger('preprocess_webform_confirmation_API_Error');
+    $error_content = \Drupal::config('bcbsma_webform_medicare_forms_api.field_mapping');
+    $variables['message'] = ['#markup' => Markup::create($error_content->get('medicare_field_data_error_confirm_msg'))];
+    $logger->notice('API Error: @sid', ['@sid' => $webform->id()]);
+  }
+}
+
+/**
+ * Implements hook_page_attachments_alter().
+ *
+ * @inheritdoc
+ */
+function bcbsma_webform_medicare_forms_api_page_attachments_alter(array &$page) {
+  $current_path = \Drupal::service('path.current')->getPath();
+  $getAliasByPath = \Drupal::service('path_alias.manager')->getAliasByPath($current_path);
+  if (\Drupal::config('bcbsma_webform_medicare_forms_api.general_config')->get('hide_error_message')) {
+    $add_js_file_path = array_map('trim', explode(PHP_EOL, \Drupal::config('bcbsma_webform_medicare_forms_api.general_config')->get('hide_error_message')));
+    if (in_array($current_path, $add_js_file_path) || in_array($getAliasByPath, $add_js_file_path)) {
+      $page['#attached']['library'][] = 'bcbsma_webform_medicare_forms_api/error-hide';
+    }
+  }
+}

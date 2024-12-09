@@ -1,0 +1,5 @@
+medicare_options.site_config_form:
+  title: 'Medicare Configurations'
+  description: 'Blue Cross Blue Shield Medicare Configurations form'
+  route_name: medicare_options.site_config_form
+  parent: system.admin_config_development

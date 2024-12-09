@@ -1,0 +1,8 @@
+name: SendGrid - BCBS Medicare
+type: module
+description: Seminar Custom SendGrid mail.
+core_version_requirement: ^10
+package: Medicare
+
+dependencies:
+  - drupal:sendgrid_api

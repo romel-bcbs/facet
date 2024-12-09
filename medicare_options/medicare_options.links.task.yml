@@ -1,0 +1,17 @@
+medicare_options.site_config_form:
+  route_name: medicare_options.site_config_form
+  title: General Medicare Options configuration
+  base_route: medicare_options.site_config_form
+  weight: 1
+
+medicare_options.zips_data:
+  route_name: medicare_options.zips_data
+  title: Zip Code Importer
+  base_route: medicare_options.site_config_form
+  weight: 2
+
+medicare_options.adobe_tags:
+  route_name: medicare_options.adobe_tags
+  title: Adobe Tags configuration
+  base_route: medicare_options.site_config_form
+  weight: 3

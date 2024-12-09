@@ -1,0 +1,5 @@
+name: Seminar - Medicare
+type: module
+description: Seminar functionality.
+core_version_requirement: ^10
+package: Medicare

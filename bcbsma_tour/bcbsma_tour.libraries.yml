@@ -1,0 +1,10 @@
+medicare-tour-plan-listing-page:
+  js:
+    js/medicare-tour-plan-listing-page.js: {}
+  css:
+    theme:
+      css/shepherds.css: {}
+  dependencies:
+    - core/jquery
+    - tour/tour
+    - tour/tour-styling

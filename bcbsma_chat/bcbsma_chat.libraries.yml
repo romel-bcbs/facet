@@ -1,0 +1,6 @@
+chat_api:
+  js:
+    js/chat_api.js: {}
+  dependencies:
+      - core/jquery
+      - core/drupalSettings

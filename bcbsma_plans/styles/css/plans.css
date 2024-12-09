@@ -1,0 +1,68 @@
+form.node-medicare-plans-edit-form > .layout-node-form {
+  display: flex;
+  flex-direction: column-reverse;
+}
+form.node-medicare-plans-edit-form > .layout-node-form > .layout-region--node-footer {
+  width: 100%;
+  padding: 0;
+}
+form.node-medicare-plans-edit-form > .layout-node-form > .layout-region--node-footer .layout-region__content {
+  max-width: 100%;
+  margin-top: 0;
+  display: flex;
+  justify-content: space-between;
+}
+form.node-medicare-plans-edit-form > .layout-node-form > .layout-region--node-footer .layout-region__content .divider {
+  display: none;
+}
+form.node-medicare-plans-edit-form > .layout-node-form > .layout-region--node-footer .layout-region__content [id*=edit-moderation-state] {
+  display: flex;
+}
+form.node-medicare-plans-edit-form > .layout-node-form > .layout-region--node-footer .layout-region__content [id*=edit-moderation-state] > div label {
+  margin-right: 10px;
+}
+form.node-medicare-plans-edit-form > .layout-node-form > .layout-region--node-footer .layout-region__content [id*=edit-moderation-state] > div:last-child {
+  margin-left: 20px;
+  display: flex;
+  align-items: center;
+}
+form.node-medicare-plans-edit-form > .layout-node-form > .layout-region--node-footer .layout-region__content .form-actions {
+  margin-bottom: 20px;
+}
+.layout-region.layout-region--node-main {
+  width: 100%;
+  padding: 0;
+}
+.layout-region.layout-region--node-main .layout-region__content {
+  max-width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+.layout-region.layout-region--node-main .layout-region__content [class*='field--name-title'] {
+  width: 100%;
+}
+.layout-region.layout-region--node-main .layout-region__content [class*='field--name-title'] input[name*=title] {
+  width: 100%;
+}
+.layout-region.layout-region--node-main .layout-region__content .plan-info-group {
+  width: 30%;
+}
+.layout-region.layout-region--node-main .layout-region__content .plan-benefits-group {
+  width: calc(70% - 22px);
+  margin-left: 20px;
+}
+.layout-region--node-secondary {
+  display: none;
+}
+.term-reference-tree-level .no-term-reference-tree-button {
+  display: none;
+}
+table[id*='ief-entity-table-edit-field-plan-benefits-entities'] tr td[class*='ief-tabledrag'],
+table[id*='ief-entity-table-edit-field-plan-benefits-entities'] tr th[class*='ief-tabledrag'] {
+  width: 40px;
+}
+table[id*='ief-entity-table-edit-field-plan-benefits-entities'] tr td:last-child,
+table[id*='ief-entity-table-edit-field-plan-benefits-entities'] tr th:last-child {
+  width: 380px;
+}

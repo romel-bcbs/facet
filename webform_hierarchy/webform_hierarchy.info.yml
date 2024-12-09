@@ -1,0 +1,7 @@
+name: Medicare Custom - Webform Hierarchy
+type: module
+description: 'Provides hierarchical widget for webforms.'
+package: Medicare
+core_version_requirement: ^8 || ^9 || ^10
+dependencies:
+  - webform:webform

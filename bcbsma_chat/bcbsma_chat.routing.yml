@@ -1,0 +1,33 @@
+# Ruting file for the bcsma_chat module.
+
+bcsma_chat.settings:
+  path: '/admin/structure/bcbsma_chat/settings'
+  defaults:
+    _form: '\Drupal\bcbsma_chat\Form\ChatSettingsForm'
+    _title: 'Bcbsma chat General Settings'
+  requirements:
+    _permission: 'administer site configuration'
+bcsma_chat.check:
+  path: '/chatavailability/check'
+  defaults:
+   _controller: 'Drupal\bcbsma_chat\Controller\ChatController::ajaxReqChatAvailablity'
+   _title: 'Get Chat availability TRUE OR FALSE'
+  methods:  [GET]
+  requirements:
+    _permission: 'access content'
+  options:
+    no_cache: true
+cisco_chat.settings:
+  path: '/admin/structure/bcbsma_chat/cisco/settings'
+  defaults:
+    _form: '\Drupal\bcbsma_chat\Form\CiscoSettingsForm'
+    _title: 'Bcbsma Cisco Chat Settings'
+  requirements:
+    _permission: 'administer site configuration'
+amelia_chat.settings:
+  path: '/admin/structure/bcbsma_chat/amelia/settings'
+  defaults:
+    _form: '\Drupal\bcbsma_chat\Form\AmeliaSettingForm'
+    _title: 'Bcbsma Amelia Chat Settings'
+  requirements:
+    _permission: 'administer site configuration'

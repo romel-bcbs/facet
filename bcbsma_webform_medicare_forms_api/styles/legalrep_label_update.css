@@ -1,0 +1,4 @@
+.form-item-date-of-birth label::after {
+  content: "(optional)";
+  margin-left: 3px;
+}

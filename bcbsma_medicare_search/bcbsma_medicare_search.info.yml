@@ -1,0 +1,5 @@
+name: 'Medicare Search'
+type: module
+description: 'This module is used to disaplay search block and search resluts.'
+core_version_requirement: ">=8.9 <11"
+package: Medicare

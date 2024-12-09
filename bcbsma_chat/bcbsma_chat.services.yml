@@ -1,0 +1,11 @@
+services:
+  bcbsma_chat.chatLogic:
+    class: Drupal\bcbsma_chat\Service\ChatEnableLogic
+    arguments: ['@http_client', '@request_stack', '@logger.factory', '@config.factory', '@key.repository', '@cache.bcbsma_chat', '@datetime.time']
+
+  cache.bcbsma_chat:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    tags:
+      - { name: cache.bin }
+    factory: cache_factory:get
+    arguments: [bcbsms_chat_bin]
